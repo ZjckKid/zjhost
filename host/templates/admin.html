@@ -272,19 +272,21 @@
                 <!-- URL Upload -->
                 <div>
                     <h3 class="text-lg font-semibold text-white mb-4">Завантажити за URL</h3>
-                    <form method="POST" action="{{ url_for('upload_from_url') }}" class="space-y-4">
+                    <form id="urlUploadForm" class="space-y-4">
                         <div>
                             <input type="url" 
+                                   id="urlInput"
                                    name="url" 
                                    placeholder="https://example.com/file.pdf" 
                                    required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40">
+                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-black placeholder-white/50 focus:outline-none focus:border-white/40">
                         </div>
                         <div>
                             <input type="text" 
+                                   id="filenameInput"
                                    name="filename" 
                                    placeholder="Ім'я файлу (опціонально)"
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40">
+                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-black placeholder-white/50 focus:outline-none focus:border-white/40">
                         </div>
                         <button type="submit" 
                                 class="w-full py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-semibold">
@@ -742,27 +744,162 @@
 
             uploadProgress.classList.add('active');
             progressStatus.textContent = 'Завантаження приватного файлу...';
+            progressBarFill.style.width = '0%';
+            progressPercent.textContent = '0%';
 
-            fetch('/admin/upload_private', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                uploadProgress.classList.remove('active');
-                if (data.success) {
-                    showNotification(`Файл завантажено! Пароль: ${data.password}`, 'success');
-                    setTimeout(() => {
-                        window.location.href = '/admin/private_files';
-                    }, 3000);
-                } else {
-                    showNotification(data.message, 'error');
+            const xhr = new XMLHttpRequest();
+            let startTime = Date.now();
+            let startLoaded = 0;
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBarFill.style.width = percentComplete + '%';
+                    progressPercent.textContent = Math.round(percentComplete) + '%';
+                    
+                    const currentTime = Date.now();
+                    const timeElapsed = (currentTime - startTime) / 1000;
+                    const bytesUploaded = e.loaded - startLoaded;
+                    if (timeElapsed > 0) {
+                        const speed = bytesUploaded / timeElapsed / (1024 * 1024);
+                        progressSpeed.textContent = speed.toFixed(2) + ' MB/s';
+                    }
+                    
+                    if (percentComplete < 100) {
+                        progressBarFill.classList.add('pulse');
+                    } else {
+                        progressBarFill.classList.remove('pulse');
+                    }
+                    
+                    startTime = currentTime;
+                    startLoaded = e.loaded;
                 }
-            })
-            .catch(error => {
-                uploadProgress.classList.remove('active');
-                showNotification('Помилка завантаження', 'error');
             });
+
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        progressBarFill.style.width = '100%';
+                        progressPercent.textContent = '100%';
+                        progressStatus.textContent = 'Завершено! Пароль: ' + data.password;
+                        progressBarFill.classList.remove('pulse');
+                        
+                        setTimeout(() => {
+                            uploadProgress.classList.remove('active');
+                            showNotification(`Приватний файл завантажено! Пароль: ${data.password}`, 'success');
+                            setTimeout(() => {
+                                window.location.href = '/admin/private_files';
+                            }, 2000);
+                        }, 1000);
+                    } catch (e) {
+                        uploadProgress.classList.remove('active');
+                        showNotification('Помилка обробки відповіді', 'error');
+                    }
+                } else {
+                    uploadProgress.classList.remove('active');
+                    showNotification('Помилка завантаження приватного файлу', 'error');
+                }
+            });
+
+            xhr.addEventListener('error', function() {
+                uploadProgress.classList.remove('active');
+                showNotification('Помилка з\'єднання при завантаженні приватного файлу', 'error');
+            });
+
+            xhr.addEventListener('abort', function() {
+                uploadProgress.classList.remove('active');
+                showNotification('Завантаження приватного файлу скасовано', 'error');
+            });
+
+            xhr.open('POST', '/admin/upload_private', true);
+            xhr.send(formData);
+        });
+
+        // URL Upload Handler
+        const urlUploadForm = document.getElementById('urlUploadForm');
+        urlUploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const url = document.getElementById('urlInput').value.trim();
+            const filename = document.getElementById('filenameInput').value.trim();
+
+            if (!url) {
+                showNotification('Введіть URL', 'error');
+                return;
+            }
+
+            uploadProgress.classList.add('active');
+            progressStatus.textContent = 'Завантаження з URL...';
+            progressBarFill.style.width = '0%';
+            progressPercent.textContent = '0%';
+            progressSpeed.textContent = '...';
+
+            const formData = new FormData();
+            formData.append('url', url);
+            if (filename) {
+                formData.append('filename', filename);
+            }
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBarFill.style.width = percentComplete + '%';
+                    progressPercent.textContent = Math.round(percentComplete) + '%';
+                    
+                    if (percentComplete < 100) {
+                        progressBarFill.classList.add('pulse');
+                    }
+                }
+            });
+
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            progressBarFill.style.width = '100%';
+                            progressPercent.textContent = '100%';
+                            progressStatus.textContent = 'Завершено!';
+                            progressBarFill.classList.remove('pulse');
+                            
+                            setTimeout(() => {
+                                uploadProgress.classList.remove('active');
+                                showNotification(`Файл ${data.filename} успішно завантажено з URL!`, 'success');
+                                document.getElementById('urlInput').value = '';
+                                document.getElementById('filenameInput').value = '';
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 2000);
+                            }, 1000);
+                        } else {
+                            uploadProgress.classList.remove('active');
+                            showNotification(`Помилка: ${data.message}`, 'error');
+                        }
+                    } catch (e) {
+                        uploadProgress.classList.remove('active');
+                        showNotification('Помилка обробки відповіді', 'error');
+                    }
+                } else {
+                    uploadProgress.classList.remove('active');
+                    showNotification('Помилка завантаження з URL', 'error');
+                }
+            });
+
+            xhr.addEventListener('error', function() {
+                uploadProgress.classList.remove('active');
+                showNotification('Помилка з\'єднання при завантаженні з URL', 'error');
+            });
+
+            xhr.addEventListener('abort', function() {
+                uploadProgress.classList.remove('active');
+                showNotification('Завантаження з URL скасовано', 'error');
+            });
+
+            xhr.open('POST', '/upload_url', true);
+            xhr.send(formData);
         });
 
         // QR Code Functions

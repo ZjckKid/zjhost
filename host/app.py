@@ -146,9 +146,11 @@ def log_download(filename, file_type='regular', user_ip=None):
         app.logger.error(f"Error logging download: {str(e)}")
 
 def get_disk_usage():
-    """Отримує використання диску"""
+    """Отримує використання диску контейнера/робочої директорії"""
     try:
-        total, used, free = shutil.disk_usage("/")
+        # Check working directory for container environments
+        working_dir = os.getcwd()
+        total, used, free = shutil.disk_usage(working_dir)
         return {
             'total': total,
             'used': used,
@@ -516,13 +518,27 @@ def download_file_from_url(url, filename=None):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        response = requests.get(url, headers=headers, stream=True, timeout=30)
-        response.raise_for_status()
+        try:
+            response = requests.get(url, headers=headers, stream=True, timeout=30)
+            response.raise_for_status()
+        except requests.Timeout:
+            return False, "Час запиту вичерпано (30 секунд)"
+        except requests.ConnectionError:
+            return False, "Помилка подключення до сервера"
+        except requests.HTTPError as e:
+            if response.status_code == 404:
+                return False, "Файл не знайдено (404)"
+            elif response.status_code == 403:
+                return False, "Доступ заборонено (403)"
+            else:
+                return False, f"Помилка HTTP {response.status_code}"
+        except requests.RequestException as e:
+            return False, f"Помилка завантаження: {str(e)}"
         
         if not filename:
             content_disposition = response.headers.get('content-disposition')
             if content_disposition and 'filename=' in content_disposition:
-                filename = content_disposition.split('filename=')[1].strip('"')
+                filename = content_disposition.split('filename=')[1].strip('"').strip("'")
             else:
                 filename = os.path.basename(parsed.path) or 'downloaded_file'
         
@@ -531,8 +547,14 @@ def download_file_from_url(url, filename=None):
             safe_filename = f"file_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
         content_length = response.headers.get('content-length')
-        if content_length and int(content_length) > app.config['MAX_CONTENT_LENGTH']:
-            return False, f"Файл занадто великий (максимум {app.config['MAX_CONTENT_LENGTH'] // (1024*1024)} MB)"
+        if content_length:
+            try:
+                file_size = int(content_length)
+                max_size = app.config['MAX_CONTENT_LENGTH']
+                if file_size > max_size:
+                    return False, f"Файл занадто великий ({file_size / (1024*1024):.1f} MB > {max_size / (1024*1024):.0f} MB)"
+            except ValueError:
+                pass
         
         file_path = os.path.join(app.config['FILES_FOLDER'], safe_filename)
         
@@ -544,16 +566,24 @@ def download_file_from_url(url, filename=None):
             file_path = os.path.join(app.config['FILES_FOLDER'], safe_filename)
             counter += 1
         
-        with open(file_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-        
-        return True, safe_filename
+        try:
+            with open(file_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            return True, safe_filename
+        except IOError as e:
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+            return False, f"Помилка запису файлу: {str(e)}"
         
     except requests.RequestException as e:
         return False, f"Помилка завантаження: {str(e)}"
     except Exception as e:
+        app.logger.error(f"Error in download_file_from_url: {str(e)}")
         return False, f"Помилка: {str(e)}"
 
 def get_dashboard_stats():
@@ -670,14 +700,17 @@ def admin():
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
-    
-    if file:
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
+        
+        if not file:
+            return jsonify({'success': False, 'message': 'Помилка обробки файлу'}), 400
+        
         filename = secure_filename(file.filename)
         if not filename:
             filename = f"file_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -698,8 +731,15 @@ def upload_file():
                 'message': f'Файл {filename} успішно завантажено!',
                 'filename': filename
             })
+        except IOError as e:
+            app.logger.error(f"IOError during file save: {str(e)}")
+            return jsonify({'success': False, 'message': f'Помилка запису файлу: {str(e)}'}), 500
         except Exception as e:
+            app.logger.error(f"Error during file save: {str(e)}")
             return jsonify({'success': False, 'message': f'Помилка: {str(e)}'}), 500
+    except Exception as e:
+        app.logger.error(f"Error in upload_file: {str(e)}")
+        return jsonify({'success': False, 'message': 'Внутрішня помилка сервера'}), 500
 
 @app.route('/upload_url', methods=['POST'])
 @login_required
@@ -708,17 +748,21 @@ def upload_from_url():
     custom_filename = request.form.get('filename', '').strip()
     
     if not url:
-        flash('URL не вказано', 'error')
-        return redirect(url_for('admin'))
+        return jsonify({'success': False, 'message': 'URL не вказано'}), 400
     
     success, result = download_file_from_url(url, custom_filename)
     
     if success:
-        flash(f'Файл {result} успішно завантажено по URL!', 'success')
+        return jsonify({
+            'success': True,
+            'message': f'Файл {result} успішно завантажено по URL!',
+            'filename': result
+        })
     else:
-        flash(f'Помилка завантаження: {result}', 'error')
-    
-    return redirect(url_for('admin'))
+        return jsonify({
+            'success': False,
+            'message': f'Помилка завантаження: {result}'
+        }), 400
 
 @app.route('/delete/<filename>')
 @login_required
@@ -957,14 +1001,17 @@ def generate_qr(filename):
 @login_required
 def upload_private_file():
     """Завантаження приватного файлу"""
-    if 'file' not in request.files:
-        return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
-    
-    if file:
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': 'Файл не вибрано'}), 400
+        
+        if not file:
+            return jsonify({'success': False, 'message': 'Помилка обробки файлу'}), 400
+        
         filename = secure_filename(file.filename)
         if not filename:
             filename = f"file_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -976,6 +1023,7 @@ def upload_private_file():
         
         try:
             file.save(file_path)
+            file_size = os.path.getsize(file_path)
             
             private_files = load_json(PRIVATE_FILES_DB)
             private_files[file_id] = {
@@ -983,7 +1031,7 @@ def upload_private_file():
                 'stored_name': f"private_{file_id}_{filename}",
                 'password': password,
                 'upload_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'size': os.path.getsize(file_path),
+                'size': file_size,
                 'type': filename.split('.')[-1] if '.' in filename else 'unknown'
             }
             save_json(PRIVATE_FILES_DB, private_files)
@@ -994,8 +1042,15 @@ def upload_private_file():
                 'password': password,
                 'file_id': file_id
             })
+        except IOError as e:
+            app.logger.error(f"IOError during private file save: {str(e)}")
+            return jsonify({'success': False, 'message': f'Помилка запису файлу: {str(e)}'}), 500
         except Exception as e:
-            return jsonify({'success': False, 'message': str(e)}), 500
+            app.logger.error(f"Error during private file save: {str(e)}")
+            return jsonify({'success': False, 'message': f'Помилка: {str(e)}'}), 500
+    except Exception as e:
+        app.logger.error(f"Error in upload_private_file: {str(e)}")
+        return jsonify({'success': False, 'message': 'Внутрішня помилка сервера'}), 500
 
 @app.route('/admin/private_files')
 @login_required
@@ -1012,7 +1067,7 @@ def admin_private_files():
             'date': data['upload_date'],
             'size': format_file_size(data['size']),
             'type': data['type'],
-            'url': url_for('access_private_file', file_id=file_id, _external=True)
+            'url': url_for('access_private_file', file_id=file_id, _external=True)+f"?p={data['password']}"
         })
     
     files_list.sort(key=lambda x: x['date'], reverse=True)
