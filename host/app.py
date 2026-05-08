@@ -45,6 +45,7 @@ module_loader.load_all()
 app.config['FILES_FOLDER'] = os.path.abspath('host/files')
 app.config['SKINS_FOLDER'] = os.path.abspath('host/skins')
 app.config['PRIVATE_FILES_FOLDER'] = os.path.abspath('host/privatefiles')
+app.config['PHOTOS_FOLDER'] = os.path.abspath('photos')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 # Налаштування сесії
@@ -68,6 +69,17 @@ os.makedirs("bot_data", exist_ok=True)
 
 # Налаштування MIME типів
 mimetypes.init()
+
+@app.route('/photo/<path:filename>')
+def photo(filename):
+    try:
+        path = safe_join(app.config['PHOTOS_FOLDER'], filename)
+        if not os.path.exists(path):
+            abort(404)
+        return send_from_directory(app.config['PHOTOS_FOLDER'], filename)
+    except Exception:
+        abort(404)
+
 mimetypes.add_type('text/markdown', '.md')
 mimetypes.add_type('text/x-python', '.py')
 mimetypes.add_type('text/x-java', '.java')
@@ -791,11 +803,16 @@ def download_file(filename):
         if not os.path.exists(path):
             return render_template('404.html'), 404
         
-        log_download(decoded_name, 'regular', request.remote_addr)
+        preview = request.args.get('preview')
+        as_attachment = False if preview is not None else True
+
+        if not preview:
+            log_download(decoded_name, 'regular', request.remote_addr)
+        
         response = send_from_directory(
             app.config['FILES_FOLDER'],
             filename,
-            as_attachment=False
+            as_attachment=as_attachment
         )
         if filename.endswith(".woff2"):
             response.headers["Content-Type"] = "font/woff2"
@@ -1061,8 +1078,8 @@ def access_private_file(file_id):
                 log_download(file_data['original_name'], 'private', request.remote_addr)
                 return send_file(file_path, as_attachment=True, download_name=file_data['original_name'])
             return render_template('404.html'), 404
-        
-        return render_template('private_file_access.html', file_id=file_id, filename=file_data['original_name'])
+
+        return render_template('404.html'), 404
     except Exception as e:
         app.logger.error(f"Private file access error: {str(e)}")
         return render_template('404.html'), 404

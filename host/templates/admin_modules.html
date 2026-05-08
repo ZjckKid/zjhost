@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Модулі — ZJH Admin</title>
-  <link rel="icon" href="http://host.zjck.eu/p/OfBPfU1gVKQ?p=1sxSXkpku6ln">
+  <link rel="icon" href="{{ url_for('photo', filename='oblachko.svg') }}">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -213,7 +213,7 @@
   <!-- Toast -->
   <div id="toast"
        class="fixed top-4 right-4 bg-green-500 text-white px-5 py-3 rounded-lg shadow-lg
-              transform translate-x-full transition-transform duration-300 z-50 text-sm">
+              transform translate-x-full transition-transform duration-300 z-50 text-sm" style="display:none;">
     <i class="fas fa-check mr-2"></i><span id="toastMsg">Збережено</span>
   </div>
 
@@ -244,9 +244,13 @@
     function showToast(msg, type = 'success') {
       const t = document.getElementById('toast');
       document.getElementById('toastMsg').textContent = msg;
+      t.style.display = 'block';
       t.className = `fixed top-4 right-4 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-5 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50 text-sm`;
       t.style.transform = 'translateX(0)';
-      setTimeout(() => { t.style.transform = 'translateX(150%)'; }, 3500);
+      setTimeout(() => {
+        t.style.transform = 'translateX(150%)';
+        setTimeout(() => { t.style.display = 'none'; }, 300);
+      }, 3500);
     }
   </script>
 </body>

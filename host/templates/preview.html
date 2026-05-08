@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="http://host.zjck.eu/p/OfBPfU1gVKQ?p=1sxSXkpku6ln" />
+    <link rel="icon" href="{{ url_for('photo', filename='oblachko.svg') }}" />
     <title>ZJH Перегляд - {{ file.original_name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -141,10 +141,6 @@
                     </a>
                 </div>
                 {% else %}
-                <a href="{{ url_for('admin_login') }}" 
-                   class="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Увійти
-                </a>
                 {% endif %}
             </div>
         </div>
@@ -225,7 +221,7 @@
                     Перегляд зображення
                 </h3>
                 <div class="preview-content">
-                    <img src="{{ url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name) }}" 
+                    <img src="{{ (url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name)) + '?preview=1' }}" 
                          alt="{{ file.original_name }}"
                          loading="lazy">
                 </div>
@@ -250,7 +246,7 @@
                 </h3>
                 <div class="preview-content">
                     <video controls preload="metadata" controlsList="nodownload">
-                        <source src="{{ url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name) }}" 
+                        <source src="{{ (url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name)) + '?preview=1' }}" 
                                 type="{{ file.mime_type }}">
                         Ваш браузер не підтримує відтворення відео.
                     </video>
@@ -301,7 +297,7 @@
                         <i class="fas fa-link mr-2"></i>Копіювати посилання
                     </button>
                     <button onclick="showQR('{{ file.original_name }}')"
-                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg action-button font-medium">
+                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-gray-800 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg action-button font-medium">
                         <i class="fas fa-qrcode mr-2"></i>QR код
                     </button>
                     <a href="{{ url_for('index') }}" 
@@ -330,7 +326,7 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50" style="display:none;">
         <i class="fas fa-check mr-2"></i>
         <span id="toastMessage">Посилання скопійовано!</span>
     </div>
@@ -361,11 +357,15 @@
             const toastMessage = document.getElementById('toastMessage');
             
             toastMessage.textContent = message;
+            toast.style.display = 'block';
             toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
             toast.style.transform = 'translateX(0)';
             
             setTimeout(() => {
                 toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 300);
             }, 3000);
         }
 

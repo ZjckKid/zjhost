@@ -147,7 +147,7 @@
 
     <!-- Toast Notification -->
     <div id="toast" 
-         class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+         class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50" style="display:none;">
         <i class="fas fa-check mr-2"></i>
         <span id="toastMessage">Скопійовано!</span>
     </div>
@@ -164,11 +164,15 @@
             const toastMessage = document.getElementById('toastMessage');
             
             toastMessage.textContent = message;
+            toast.style.display = 'block';
             toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
             toast.style.transform = 'translateX(0)';
             
             setTimeout(() => {
                 toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 300);
             }, 3000);
         }
 
