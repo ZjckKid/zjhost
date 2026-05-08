@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZJH - Вхід через Telegram</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .floating-shapes::before,
+        .floating-shapes::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        .floating-shapes::before {
+            width: 200px;
+            height: 200px;
+            top: 20%;
+            right: 10%;
+            animation-delay: -2s;
+        }
+        .floating-shapes::after {
+            width: 150px;
+            height: 150px;
+            bottom: 30%;
+            left: 15%;
+            animation-delay: -4s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="floating-shapes"></div>
+    
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="glass-effect rounded-2xl p-8 w-full max-w-md shadow-2xl relative z-10">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
+                    <i class="fab fa-telegram text-white text-4xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">Адмін-панель</h1>
+                <p class="text-white/70">Вхід через Telegram бота</p>
+            </div>
+
+            <!-- Flash messages -->
+            <div id="flashMessages" class="mb-6 space-y-2 hidden"></div>
+
+            <!-- Step 1: Request Code -->
+            <div id="step1" class="space-y-6">
+                <div class="glass-effect rounded-xl p-4 mb-6">
+                    <h3 class="text-white font-semibold mb-3 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>Як увійти:
+                    </h3>
+                    <ol class="text-white/80 text-sm space-y-2 list-decimal list-inside">
+                        <li>Натисніть кнопку "Отримати код"</li>
+                        <li>Код буде надіслано вам в Telegram</li>
+                        <li>Введіть отриманий код нижче</li>
+                        <li>Код дійсний протягом 10 хвилин</li>
+                    </ol>
+                </div>
+
+                <button onclick="requestCode()" 
+                        id="requestBtn"
+                        class="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transform hover:scale-105 transition-all duration-300">
+                    <i class="fab fa-telegram mr-2"></i>Отримати код в Telegram
+                </button>
+            </div>
+
+            <!-- Step 2: Enter Code -->
+            <div id="step2" class="space-y-6 hidden">
+
+
+                <form id="codeForm">
+                    <div>
+                        <label for="code" class="block text-sm font-medium text-white/90 mb-2">
+                            <i class="fas fa-key mr-2"></i>Код з Telegram
+                        </label>
+                        <input type="text" 
+                               id="code" 
+                               name="code" 
+                               required
+                               maxlength="6"
+                               placeholder="Введіть 6-значний код"
+                               class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white text-center text-2xl font-mono placeholder-white/50 focus:outline-none input-glow focus:border-white/40 transition-all duration-300 uppercase"
+                               style="letter-spacing: 0.5em;">
+                        <p class="text-white/60 text-xs mt-2">
+                            <i class="fas fa-clock mr-1"></i>Код дійсний 10 хвилин
+                        </p>
+                    </div>
+
+                    <button type="submit" 
+                            id="submitBtn"
+                            class="w-full mt-6 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-green-500/50 transform hover:scale-105 transition-all duration-300">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Увійти
+                    </button>
+                </form>
+
+                <button onclick="backToStep1()" 
+                        class="w-full py-2 px-4 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Запросити новий код
+                </button>
+            </div>
+
+            <!-- Back to Main -->
+            <div class="mt-4 text-center">
+                <a href="/" 
+                   class="inline-flex items-center text-white/70 hover:text-white transition-colors duration-300 text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Повернутися на головну
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const requestBtn = document.getElementById('requestBtn');
+        const codeForm = document.getElementById('codeForm');
+        const codeInput = document.getElementById('code');
+        const submitBtn = document.getElementById('submitBtn');
+        const flashMessages = document.getElementById('flashMessages');
+
+        // Автоматично перетворюємо на великі літери
+        codeInput.addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
+        });
+
+        // Показати повідомлення
+        function showMessage(message, type) {
+            const alertClass = type === 'error' ? 'bg-red-500/20 text-red-100 border-red-400/30' : 
+                              type === 'success' ? 'bg-green-500/20 text-green-100 border-green-400/30' : 
+                              'bg-blue-500/20 text-blue-100 border-blue-400/30';
+            
+            flashMessages.innerHTML = `
+                <div class="p-3 rounded-lg text-sm font-medium border ${alertClass}">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            flashMessages.classList.remove('hidden');
+        }
+
+        // Запросити код
+        async function requestCode() {
+            requestBtn.disabled = true;
+            requestBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Надсилання...';
+            
+            try {
+                const response = await fetch('/admin_login/request_code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    showMessage(data.message, 'success');
+                    setTimeout(() => {
+                        codeInput.focus();
+                    }, 500);
+                } else {
+                    showMessage(data.message || 'Помилка надсилання коду', 'error');
+                    requestBtn.disabled = false;
+                    requestBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i>Отримати код в Telegram';
+                }
+            } catch (error) {
+                showMessage('Помилка з\'єднання. Спробуйте ще раз.', 'error');
+                requestBtn.disabled = false;
+                requestBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i>Отримати код в Telegram';
+            }
+        }
+
+        // Повернутися до step1
+        function backToStep1() {
+            step2.classList.add('hidden');
+            step1.classList.remove('hidden');
+            codeInput.value = '';
+            requestBtn.disabled = false;
+            requestBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i>Отримати код в Telegram';
+            flashMessages.classList.add('hidden');
+        }
+
+        // Відправити форму з кодом
+        codeForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const code = codeInput.value.trim();
+            
+            if (code.length !== 6) {
+                showMessage('Код повинен містити 6 символів', 'error');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Перевірка...';
+            
+            try {
+                const response = await fetch('/admin_login/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Успішний вхід! Перенаправлення...', 'success');
+                    submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Успішно!';
+                    submitBtn.classList.remove('from-green-500', 'to-emerald-500');
+                    submitBtn.classList.add('from-blue-500', 'to-indigo-500');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 1500);
+                } else {
+                    showMessage(data.message || 'Невірний або прострочений код', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Увійти';
+                    codeInput.value = '';
+                    codeInput.focus();
+                }
+            } catch (error) {
+                showMessage('Помилка з\'єднання. Спробуйте ще раз.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Увійти';
+            }
+        });
+
+        // Додаткові плаваючі елементи
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.floating-shapes');
+            for (let i = 0; i < 3; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'absolute rounded-full bg-white/5';
+                circle.style.width = Math.random() * 100 + 50 + 'px';
+                circle.style.height = circle.style.width;
+                circle.style.left = Math.random() * 100 + '%';
+                circle.style.top = Math.random() * 100 + '%';
+                circle.style.animationDelay = Math.random() * 6 + 's';
+                circle.style.animation = 'float 8s ease-in-out infinite';
+                container.appendChild(circle);
+            }
+        });
+    </script>
+</body>
+</html>

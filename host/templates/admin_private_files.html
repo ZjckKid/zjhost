@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приватні файли - ZJH</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .password-field {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Header -->
+    <div class="glass-effect sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-lock text-2xl text-white"></i>
+                    <h1 class="text-2xl font-bold text-white">Приватні файли</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('admin') }}" 
+                       class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300">
+                        <i class="fas fa-arrow-left mr-2"></i>Назад
+                    </a>
+                    <a href="{{ url_for('logout') }}" 
+                       class="px-4 py-2 bg-red-500/20 text-white rounded-lg hover:bg-red-500/40 transition-all duration-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Вийти
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Upload Section -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-upload mr-3"></i>Завантажити приватний файл
+            </h2>
+            
+            <form method="POST" action="{{ url_for('upload_private_file') }}" enctype="multipart/form-data">
+                <div class="space-y-4">
+                    <div class="bg-white/10 border-2 border-dashed border-white/30 rounded-xl p-8 text-center">
+                        <i class="fas fa-shield-alt text-6xl text-white/60 mb-4"></i>
+                        <p class="text-white mb-4">
+                            Приватні файли захищені паролем та доступні тільки за прямим посиланням
+                        </p>
+                        <input type="file" name="file" required class="hidden" id="privateFileInput">
+                        <button type="button" onclick="document.getElementById('privateFileInput').click()" 
+                                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300">
+                            <i class="fas fa-folder-open mr-2"></i>Обрати файл
+                        </button>
+                        <p class="text-white/50 text-sm mt-4" id="selectedFileName"></p>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 font-semibold">
+                        <i class="fas fa-lock mr-2"></i>Завантажити приватно
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Files List -->
+        {% if files %}
+        <div class="space-y-4">
+            {% for file in files %}
+            <div class="glass-effect rounded-xl p-6 card-hover">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-white mb-2">
+                            <i class="fas fa-file-{{ file.type }} mr-2"></i>{{ file.name }}
+                        </h3>
+                        <div class="text-sm text-white/70 space-y-1">
+                            <p><i class="fas fa-calendar mr-2"></i>{{ file.date }}</p>
+                            <p><i class="fas fa-weight-hanging mr-2"></i>{{ file.size }}</p>
+                            <p class="flex items-center">
+                                <i class="fas fa-link mr-2"></i>
+                                <code class="bg-white/10 px-2 py-1 rounded text-xs">{{ file.url }}</code>
+                                <button onclick="copyText('{{ file.url }}')" class="ml-2 text-blue-300 hover:text-blue-100">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col space-y-2">
+                        <div class="bg-white/10 rounded-lg p-3">
+                            <p class="text-white/60 text-xs mb-1">Пароль:</p>
+                            <div class="flex items-center space-x-2">
+                                <code class="password-field text-white font-bold text-lg" id="password-{{ file.id }}">{{ file.password }}</code>
+                                <button onclick="copyText('{{ file.password }}')" 
+                                        class="px-2 py-1 bg-blue-500/20 text-blue-200 rounded hover:bg-blue-500/40 transition-all">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="resetPassword('{{ file.id }}')" 
+                                    class="flex-1 px-4 py-2 bg-yellow-500/20 text-yellow-200 rounded-lg hover:bg-yellow-500/40 transition-all text-sm">
+                                <i class="fas fa-sync-alt mr-1"></i>Скинути
+                            </button>
+                            <button onclick="deletePrivateFile('{{ file.id }}')" 
+                                    class="flex-1 px-4 py-2 bg-red-500/20 text-red-200 rounded-lg hover:bg-red-500/40 transition-all text-sm">
+                                <i class="fas fa-trash mr-1"></i>Видалити
+                            </button>
+                        </div>
+                        
+                        <button onclick="copyFullLink('{{ file.url }}', '{{ file.password }}')" 
+                                class="px-4 py-2 bg-purple-500/20 text-purple-200 rounded-lg hover:bg-purple-500/40 transition-all text-sm">
+                            <i class="fas fa-link mr-1"></i>Копіювати повне посилання
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-effect rounded-2xl p-12 text-center">
+            <i class="fas fa-lock text-6xl text-white/60 mb-6"></i>
+            <h3 class="text-2xl font-bold text-white mb-4">Немає приватних файлів</h3>
+            <p class="text-white/70">Завантажте перший приватний файл</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" 
+         class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <i class="fas fa-check mr-2"></i>
+        <span id="toastMessage">Скопійовано!</span>
+    </div>
+
+    <script>
+        // Show selected filename
+        document.getElementById('privateFileInput').addEventListener('change', function(e) {
+            const filename = e.target.files[0]?.name || '';
+            document.getElementById('selectedFileName').textContent = filename ? `Обрано: ${filename}` : '';
+        });
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
+            toast.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+            }, 3000);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Скопійовано!');
+            }).catch(() => {
+                showToast('Помилка копіювання', 'error');
+            });
+        }
+
+        function copyFullLink(url, password) {
+            const fullLink = `${url}?p=${password}`;
+            navigator.clipboard.writeText(fullLink).then(() => {
+                showToast('Повне посилання скопійовано!');
+            }).catch(() => {
+                showToast('Помилка копіювання', 'error');
+            });
+        }
+
+        async function resetPassword(fileId) {
+            if (!confirm('Ви впевнені що хочете скинути пароль? Старе посилання перестане працювати.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/private/${fileId}/reset_password`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById(`password-${fileId}`).textContent = data.password;
+                    showToast('Пароль успішно скинуто!');
+                } else {
+                    showToast(data.message || 'Помилка', 'error');
+                }
+            } catch (error) {
+                showToast('Помилка з\'єднання', 'error');
+            }
+        }
+
+        async function deletePrivateFile(fileId) {
+            if (!confirm('Ви впевнені що хочете видалити цей файл?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/private/${fileId}/delete`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Файл видалено!');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'Помилка', 'error');
+                }
+            } catch (error) {
+                showToast('Помилка з\'єднання', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

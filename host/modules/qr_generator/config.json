@@ -1,0 +1,9 @@
+{
+  "name": "qr_generator",
+  "display_name": "QR Generator",
+  "description": "Генератор QR-кодів з вибором розміру, кольору та завантаженням PNG",
+  "version": "1.0.0",
+  "enabled": true,
+  "visibility": "public",
+  "url_prefix": "/qr-generator"
+}

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://host.zjck.eu/download/uMR_06.13_14-05-39.png" />
+    <title>ZJH Повний перегляд - {{ file.original_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .floating-header {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .content-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: calc(100vh - 200px);
+        }
+        .file-type-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 16px;
+            text-transform: uppercase;
+        }
+        .full-content {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .highlight {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .highlight pre {
+            margin: 0;
+            padding: 2rem;
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+        .plain-text {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            color: #333;
+        }
+        .action-button {
+            transition: all 0.3s ease;
+            transform: scale(1);
+        }
+        .action-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .info-badge {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .toolbar {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #dee2e6;
+        }
+        .copy-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        .copy-button:hover {
+            opacity: 1;
+        }
+        .content-wrapper {
+            position: relative;
+        }
+        .line-numbers {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 2rem 1rem;
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            text-align: right;
+            user-select: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .code-with-lines {
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .code-content {
+            flex: 1;
+            overflow-x: auto;
+        }
+    </style>
+    {% if style %}
+    <style>{{ style|safe }}</style>
+    {% endif %}
+</head>
+<body class="min-h-screen gradient-bg">
+    <!-- Header -->
+    <div class="floating-header sticky top-0 z-50 border-b border-white/20">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('preview_file', filename=file.original_name) }}" 
+                       class="text-blue-600 hover:text-blue-800 transition-colors">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </a>
+                    <i class="fas fa-expand-arrows-alt text-2xl text-blue-600"></i>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Повний перегляд
+                    </h1>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="copyContent()" 
+                            class="flex items-center px-3 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg action-button text-sm">
+                        <i class="fas fa-copy mr-2"></i>Копіювати
+                    </button>
+                    <a href="{{ url_for('download_file', filename=file.original_name) }}" 
+                       class="flex items-center px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg action-button text-sm">
+                        <i class="fas fa-download mr-2"></i>Завантажити
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6">
+        <div class="content-container rounded-2xl shadow-2xl overflow-hidden">
+            <!-- File Info Header -->
+            <div class="toolbar p-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ file.color.replace('text-', 'from-').replace('-500', '-400') }} to-{{ file.color.split('-')[1] }}-600 flex items-center justify-center shadow-lg">
+                            <i class="fas {{ file.icon }} text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 truncate max-w-xs sm:max-w-md">
+                                {{ file.original_name }}
+                            </h2>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                <span class="file-type-badge">{{ file.type.upper() }}</span>
+                                <span class="info-badge">
+                                    <i class="fas fa-weight-hanging"></i>
+                                    {{ file.formatted_size }}
+                                </span>
+                                {% if file.line_count > 0 %}
+                                <span class="info-badge">
+                                    <i class="fas fa-code"></i>
+                                    {{ file.line_count }} рядків
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-wrapper">
+                <div class="full-content" id="file-content">
+                    {% if style %}
+                        <!-- Code with syntax highlighting -->
+                        <div class="code-with-lines">
+                            {% if file.line_count > 0 %}
+                            <div class="line-numbers">
+                                {% for i in range(1, file.line_count + 1) %}
+                                    {{ i }}<br>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="code-content">
+                                {{ content|safe }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Plain text -->
+                        <div class="plain-text">{{ content }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Copy Button -->
+                <button onclick="copyContent()" 
+                        class="copy-button flex items-center px-3 py-2 bg-black bg-opacity-70 text-white rounded-lg hover:bg-opacity-90 transition-all duration-300 text-sm">
+                    <i class="fas fa-copy mr-2"></i>Копіювати
+                </button>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{{ url_for('preview_file', filename=file.original_name) }}" 
+                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-compress-arrows-alt mr-2"></i>Стандартний перегляд
+                    </a>
+                    <a href="{{ url_for('download_file', filename=file.original_name) }}" 
+                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-download mr-2"></i>Завантажити файл
+                    </a>
+                    <a href="{{ url_for('index') }}" 
+                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-home mr-2"></i>На головну
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" 
+         class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <i class="fas fa-check mr-2"></i>Скопійовано до буферу обміну!
+    </div>
+
+    <script>
+        function copyContent() {
+            const contentElement = document.getElementById('file-content');
+            let textToCopy = '';
+            
+            // Get plain text content
+            if (contentElement.querySelector('.highlight pre')) {
+                textToCopy = contentElement.querySelector('.highlight pre').innerText;
+            } else {
+                textToCopy = contentElement.innerText;
+            }
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                showToast();
+            }).catch(function(err) {
+                console.error('Помилка копіювання: ', err);
+                // Fallback for older browsers
+                fallbackCopyTextToClipboard(textToCopy);
+            });
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (err) {
+                console.error('Fallback: Помилка копіювання', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+C or Cmd+C to copy
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !window.getSelection().toString()) {
+                e.preventDefault();
+                copyContent();
+            }
+            
+            // Escape to go back
+            if (e.key === 'Escape') {
+                window.history.back();
+            }
+        });
+    </script>
+</body>
+</html>

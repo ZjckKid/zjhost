@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="http://host.zjck.eu/p/OfBPfU1gVKQ?p=1sxSXkpku6ln" />
+    <title>ZJH Перегляд - {{ file.original_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .floating-header {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .preview-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .file-type-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 16px;
+            text-transform: uppercase;
+        }
+        .preview-content {
+            max-height: 70vh;
+            overflow: auto;
+        }
+        .preview-content img {
+            max-width: 100%;
+            max-height: 70vh;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .preview-content video {
+            max-width: 100%;
+            max-height: 70vh;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .code-preview {
+            background: #2d3748;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .text-preview {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .action-button {
+            transition: all 0.3s ease;
+            transform: scale(1);
+        }
+        .action-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .highlight {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .highlight pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        .info-badge {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Video Controls Enhancement */
+        video::-webkit-media-controls-panel {
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        }
+        
+        /* Audio Player */
+        audio {
+            width: 100%;
+            border-radius: 12px;
+        }
+    </style>
+    {% if preview.type == 'code' %}
+    <style>{{ preview.style|safe }}</style>
+    {% endif %}
+</head>
+<body class="min-h-screen gradient-bg">
+    <!-- Header -->
+    <div class="floating-header sticky top-0 z-50 border-b border-white/20">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('index') }}" class="text-blue-600 hover:text-blue-800 transition-colors">
+                        <i class="fas fa-arrow-left text-2xl"></i>
+                    </a>
+                    <i class="fas fa-eye text-3xl text-blue-600"></i>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Перегляд файлу
+                    </h1>
+                </div>
+                
+                {% if is_logged_in %}
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('admin') }}" 
+                       class="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-lg">
+                        <i class="fas fa-cog mr-2"></i>Адміністрування
+                    </a>
+                    <a href="{{ url_for('logout') }}" 
+                       class="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-lg">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Вийти
+                    </a>
+                </div>
+                {% else %}
+                <a href="{{ url_for('admin_login') }}" 
+                   class="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Увійти
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- File Info Card -->
+        <div class="preview-container rounded-2xl shadow-2xl mb-8 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 border-b border-gray-100">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-xl bg-gradient-to-br {{ file.color.replace('text-', 'from-').replace('-500', '-400') }} to-{{ file.color.split('-')[1] }}-600 flex items-center justify-center shadow-lg">
+                            <i class="fas {{ file.icon }} text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ file.original_name }}</h2>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="file-type-badge">{{ file.type.upper() }}</span>
+                                <span class="info-badge">
+                                    <i class="fas fa-weight-hanging"></i>
+                                    {{ file.formatted_size }}
+                                </span>
+                                <span class="info-badge">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ file.upload_date }}
+                                </span>
+                                {% if file.line_count > 0 %}
+                                <span class="info-badge">
+                                    <i class="fas fa-code"></i>
+                                    {{ file.line_count }} рядків
+                                </span>
+                                {% endif %}
+                                {% if file.download_count > 0 %}
+                                <span class="info-badge">
+                                    <i class="fas fa-download"></i>
+                                    {{ file.download_count }} завантажень
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Content -->
+            <div class="p-6">
+                {% if preview.type == 'code' %}
+                <div class="mb-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <h3 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i class="fas fa-code mr-2 text-blue-500"></i>
+                        Попередній перегляд коду
+                    </h3>
+                    <a href="{{ url_for('preview_full_file', filename=file.original_name) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg action-button">
+                        <i class="fas fa-expand-arrows-alt mr-2"></i>Повний перегляд
+                    </a>
+                </div>
+                <div class="code-preview">
+                    {{ preview.content|safe }}
+                </div>
+
+                {% elif preview.type == 'text' %}
+                <div class="mb-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <h3 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i class="fas fa-file-alt mr-2 text-green-500"></i>
+                        Попередній перегляд тексту
+                    </h3>
+                    <a href="{{ url_for('preview_full_file', filename=file.original_name) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg action-button">
+                        <i class="fas fa-expand-arrows-alt mr-2"></i>Повний перегляд
+                    </a>
+                </div>
+                <div class="text-preview">{{ preview.content }}</div>
+
+                {% elif preview.type == 'image' %}
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-image mr-2 text-pink-500"></i>
+                    Перегляд зображення
+                </h3>
+                <div class="preview-content">
+                    <img src="{{ url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name) }}" 
+                         alt="{{ file.original_name }}"
+                         loading="lazy">
+                </div>
+
+                {% elif preview.type == 'archive' %}
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-file-archive mr-2 text-purple-500"></i>
+                    Архів
+                </h3>
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-8 text-center border-2 border-purple-200">
+                    <i class="fas fa-file-archive text-8xl text-purple-500 mb-6"></i>
+                    <h4 class="text-2xl font-bold text-gray-800 mb-3">Файл-архів</h4>
+                    <p class="text-gray-600 mb-6">
+                        Цей файл є архівом. Перегляд вмісту архіву недоступний.<br>
+                        Завантажте файл для перегляду вмісту на вашому комп'ютері.
+                    </p>
+                </div>
+                {% elif preview.type == 'video' %}
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-video mr-2 text-red-500"></i>
+                    Перегляд відео
+                </h3>
+                <div class="preview-content">
+                    <video controls preload="metadata" controlsList="nodownload">
+                        <source src="{{ url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name) }}" 
+                                type="{{ file.mime_type }}">
+                        Ваш браузер не підтримує відтворення відео.
+                    </video>
+                </div>
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                        <strong>Підтримувані формати:</strong> MP4, WebM, OGG, MKV, AVI, MOV
+                    </p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
+                        <strong>Підказка:</strong> Використовуйте кнопку завантаження для збереження файлу
+                    </p>
+                </div>
+
+                {% elif preview.type == 'pdf' %}
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-file-pdf mr-2 text-red-500"></i>
+                    PDF документ
+                </h3>
+                <div class="bg-gray-100 rounded-xl p-8 text-center">
+                    <i class="fas fa-file-pdf text-6xl text-red-500 mb-4"></i>
+                    <p class="text-gray-600 mb-4">PDF файли краще переглядати у спеціалізованій програмі</p>
+                </div>
+
+                {% else %}
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-file mr-2 text-gray-500"></i>
+                    Перегляд недоступний
+                </h3>
+                <div class="bg-gray-100 rounded-xl p-8 text-center">
+                    <i class="fas fa-eye-slash text-6xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-4">Для цього типу файлу перегляд недоступний</p>
+                    <p class="text-sm text-gray-500">Ви можете завантажити файл для відкриття у відповідній програмі</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{{ url_for('download_file', filename=file.original_name) if file.folder == 'files' else url_for('download_skin', filename=file.original_name) }}" 
+                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-download mr-2"></i>Завантажити файл
+                    </a>
+                    <button onclick="copyLink('{{ url_for('download_file', filename=file.original_name, _external=True) if file.folder == 'files' else url_for('download_skin', filename=file.original_name, _external=True) }}')"
+                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-link mr-2"></i>Копіювати посилання
+                    </button>
+                    <button onclick="showQR('{{ file.original_name }}')"
+                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-qrcode mr-2"></i>QR код
+                    </button>
+                    <a href="{{ url_for('index') }}" 
+                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg action-button font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>Повернутися назад
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qrModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-gray-800">QR Код</h3>
+                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="text-center">
+                <img id="qrImage" src="" alt="QR Code" class="mx-auto mb-4 rounded-lg">
+                <p class="text-sm text-gray-600">Скануйте для завантаження</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <i class="fas fa-check mr-2"></i>
+        <span id="toastMessage">Посилання скопійовано!</span>
+    </div>
+
+    <script>
+        function showQR(filename) {
+            const qrImage = document.getElementById('qrImage');
+            qrImage.src = `/qrcode/${encodeURIComponent(filename)}`;
+            document.getElementById('qrModal').classList.remove('hidden');
+            document.getElementById('qrModal').classList.add('flex');
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.add('hidden');
+            document.getElementById('qrModal').classList.remove('flex');
+        }
+
+        function copyLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Посилання скопійовано!');
+            }).catch(() => {
+                showToast('Помилка копіювання', 'error');
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
+            toast.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Escape to go back
+            if (e.key === 'Escape') {
+                window.history.back();
+            }
+            
+            // D to download
+            if (e.key === 'd' || e.key === 'D') {
+                const downloadBtn = document.querySelector('a[href*="download"]');
+                if (downloadBtn) downloadBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

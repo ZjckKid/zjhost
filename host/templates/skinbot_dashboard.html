@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZJH SkinBot - Мої скіни</title>
+    <link rel="icon" href="http://host.zjck.eu/p/OfBPfU1gVKQ?p=1sxSXkpku6ln" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .floating-header {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .skin-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0),
+                        linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%, #f0f0f0);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        
+        /* 3D Viewer */
+        #skinViewer3D {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+            border-radius: 12px;
+            cursor: grab;
+        }
+        #skinViewer3D:active {
+            cursor: grabbing;
+        }
+        
+        /* Stats Animation */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-number {
+            animation: countUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg">
+    <!-- Header -->
+    <div class="floating-header sticky top-0 z-50 border-b border-white/20">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fab fa-telegram text-3xl text-blue-600"></i>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Мої скіни
+                    </h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex items-center space-x-2 text-gray-700">
+                        <i class="fab fa-telegram"></i>
+                        <span class="font-medium">{{ username }}</span>
+                    </div>
+                    <a href="{{ url_for('index') }}" 
+                       class="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg">
+                        <i class="fas fa-home mr-2"></i>Головна
+                    </a>
+                    <a href="{{ url_for('skinbot_logout') }}" 
+                       class="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-lg">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Вийти
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Stats Card -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-images text-white text-2xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-white stat-number">{{ skins|length }}</div>
+                    <div class="text-white/70">Всього скінів</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-calendar text-white text-2xl"></i>
+                    </div>
+                    <div class="text-xl font-bold text-white stat-number">
+                        {% if skins %}
+                            {{ skins[0].upload_date.split(' ')[0] if skins[0].upload_date else 'N/A' }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                    <div class="text-white/70">Останній скін</div>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-check text-white text-2xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-white stat-number">
+                        {% if skins %}Активно{% else %}0{% endif %}
+                    </div>
+                    <div class="text-white/70">Статус</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-question-circle mr-2"></i>Як завантажити скін?
+            </h3>
+            <div class="space-y-2 text-white/80">
+                <p><span class="text-white font-semibold">1.</span> Відкрийте бота в Telegram: <a href="https://t.me/skinshorizonsbot" target="_blank" class="text-blue-300 hover:text-blue-200 underline">@skinshorizonsbot</a></p>
+                <p><span class="text-white font-semibold">2.</span> Надішліть PNG файл зі скіном (не як фото!)</p>
+                <p><span class="text-white font-semibold">3.</span> Скін автоматично з'явиться тут</p>
+                <p class="text-white/60 text-sm mt-4">
+                    <i class="fas fa-info-circle mr-1"></i>Скіни зберігаються назавжди та доступні для швидкого копіювання
+                </p>
+            </div>
+        </div>
+
+        <!-- Skins Grid -->
+        {% if skins %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8" id="skinsGrid">
+            {% for skin in skins %}
+            <div class="bg-white/95 backdrop-filter backdrop-blur-sm rounded-xl shadow-xl card-hover overflow-hidden border border-white/30 skin-card">
+                <!-- Skin Preview -->
+                <div class="bg-gray-100 p-4 flex items-center justify-center relative" style="height: 220px;">
+                    <img src="{{ skin.link }}" 
+                         alt="Skin preview" 
+                         class="skin-preview"
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                </div>
+                
+                <!-- Skin Info -->
+                <div class="p-4">
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-300 mb-1">
+                            <i class="fas fa-calendar-alt mr-1"></i>{{ skin.upload_date }}
+                        </p>
+                        <p class="text-xs text-gray-400 font-mono truncate" title="{{ skin.filename }}">
+                            <i class="fas fa-file mr-1"></i>{{ skin.filename }}
+                        </p>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="space-y-2">
+                        <button onclick="copyLink('{{ skin.link }}')" 
+                                class="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105">
+                            <i class="fas fa-link mr-2"></i>Копіювати посилання
+                        </button>
+                        <button onclick="copyCommand('{{ skin.link }}')" 
+                                class="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105">
+                            <i class="fas fa-terminal mr-2"></i>Копіювати команду
+                        </button>
+
+                        <button onclick="deleteSkin('{{ skin.filename }}')" 
+                                class="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105">
+                            <i class="fas fa-trash"></i>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-16">
+            <div class="bg-white/95 backdrop-filter backdrop-blur-sm rounded-2xl p-12 max-w-md mx-auto shadow-2xl">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <i class="fas fa-tshirt text-white text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Поки що немає скінів</h3>
+                <p class="text-gray-600 mb-6">
+                    Надішліть свій перший скін боту в Telegram!
+                </p>
+                <a href="https://t.me/skinshorizonsbot" 
+                   target="_blank"
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-lg transform hover:scale-105">
+                    <i class="fab fa-telegram mr-2"></i>Відкрити бота
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" 
+         class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 flex items-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toastMessage">Скопійовано!</span>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-2xl">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Підтвердження видалення
+            </h3>
+            <p class="text-gray-600 mb-6">Ви впевнені що хочете видалити цей скін?</p>
+            <div class="flex space-x-3">
+                <button onclick="closeDeleteModal()" 
+                        class="flex-1 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all duration-300">
+                    Скасувати
+                </button>
+                <button id="confirmDelete" 
+                        class="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300">
+                    Видалити
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let deleteFilename = null;
+      
+        
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50 flex items-center`;
+            toast.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+            }, 3000);
+        }
+
+        function copyLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Посилання скопійовано!');
+            }).catch(() => {
+                showToast('Помилка копіювання', 'error');
+            });
+        }
+
+        function copyCommand(url) {
+            const command = `/skin url "${url}"`;
+            navigator.clipboard.writeText(command).then(() => {
+                showToast('Команду скопійовано!');
+            }).catch(() => {
+                showToast('Помилка копіювання', 'error');
+            });
+        }
+
+        function deleteSkin(filename) {
+            deleteFilename = filename;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+            deleteFilename = null;
+        }
+
+        document.getElementById('confirmDelete').addEventListener('click', async function() {
+            if (!deleteFilename) return;
+            
+            try {
+                const response = await fetch('/skinbot/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ filename: deleteFilename })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Скін успішно видалено!');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'Помилка видалення', 'error');
+                }
+            } catch (error) {
+                showToast('Помилка з\'єднання', 'error');
+            }
+            
+            closeDeleteModal();
+        });
+    </script>
+</body>
+</html>

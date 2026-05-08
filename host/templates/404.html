@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="http://host.zjck.eu/p/OfBPfU1gVKQ?p=1sxSXkpku6ln" />
+    <title>ZJH - Файл не знайдено</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .error-icon {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="floating-shapes" id="floatingShapes"></div>
+    
+    <div class="min-h-screen flex items-center justify-center px-4 relative z-10">
+        <div class="glass-effect rounded-2xl p-8 md:p-12 w-full max-w-2xl shadow-2xl">
+            <!-- Error Icon -->
+            <div class="text-center mb-8">
+                <div class="w-32 h-32 bg-gradient-to-br from-red-400 to-pink-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg error-icon">
+                    <i class="fas fa-file-excel text-white text-6xl"></i>
+                </div>
+                <h1 class="text-6xl font-bold text-white mb-4">404</h1>
+                <h2 class="text-3xl font-bold text-white mb-4">Файл не знайдено</h2>
+                <p class="text-white/80 text-lg mb-2">
+                    На жаль, файл який ви шукаєте не існує або був видалений
+                </p>
+                <p class="text-white/60 text-sm">
+                    Можливо посилання застаріло або файл було переміщено
+                </p>
+            </div>
+
+            <!-- Suggestions -->
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h3 class="text-white font-semibold mb-4 flex items-center">
+                    <i class="fas fa-lightbulb mr-2 text-yellow-300"></i>Що ви можете зробити:
+                </h3>
+                <ul class="text-white/80 space-y-3">
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-300 mr-3 mt-1 flex-shrink-0"></i>
+                        <span>Перевірте правильність посилання</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-300 mr-3 mt-1 flex-shrink-0"></i>
+                        <span>Зверніться до особи, яка надала вам посилання</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-300 mr-3 mt-1 flex-shrink-0"></i>
+                        <span>Поверніться на головну сторінку та знайдіть файл там</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-300 mr-3 mt-1 flex-shrink-0"></i>
+                        <span>Можливо файл був видалений власником</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="/" 
+                   class="flex-1 inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-lg transform hover:scale-105 font-semibold">
+                    <i class="fas fa-home mr-2"></i>На головну
+                </a>
+                <button onclick="window.history.back()" 
+                        class="flex-1 inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-lg transform hover:scale-105 font-semibold">
+                    <i class="fas fa-arrow-left mr-2"></i>Назад
+                </button>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="mt-6 text-center">
+                <p class="text-white/60 text-sm">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Якщо проблема повторюється, зв'яжіться з адміністратором: <a href="https://t.me/zjckkid" class="text-blue-300 hover:text-blue-200 underline">@zjckkid</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating circles
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('floatingShapes');
+            const colors = ['rgba(255, 255, 255, 0.03)', 'rgba(102, 126, 234, 0.05)', 'rgba(118, 75, 162, 0.05)'];
+            
+            for (let i = 0; i < 8; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'floating-circle';
+                const size = Math.random() * 150 + 50;
+                circle.style.width = size + 'px';
+                circle.style.height = size + 'px';
+                circle.style.left = Math.random() * 100 + '%';
+                circle.style.top = Math.random() * 100 + '%';
+                circle.style.animationDelay = Math.random() * 6 + 's';
+                circle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                circle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(circle);
+            }
+        });
+    </script>
+</body>
+</html>

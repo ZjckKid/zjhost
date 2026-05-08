@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZJH Помилка</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-yellow-500 text-8xl mb-6"></i>
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Помилка</h1>
+        <p class="text-xl text-gray-600 mb-8">{{ message }}</p>
+        <a href="{{ url_for('index') }}" class="inline-flex items-center text-blue-500 hover:text-blue-600">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Повернутися на головну
+        </a>
+    </div>
+</body>
+</html>
