@@ -396,6 +396,7 @@ def get_file_info(filename, folder='files'):
         downloads_log = load_json(DOWNLOADS_LOG)
         download_count = downloads_log.get(decoded_name, {}).get('count', 0)
         
+        upload_timestamp = os.path.getctime(raw_path)
         return {
             'original_name': decoded_name,
             'safe_name': safe_name,
@@ -404,7 +405,8 @@ def get_file_info(filename, folder='files'):
             'type': file_type,
             'mime_type': mime_type or 'application/octet-stream',
             'path': raw_path,
-            'upload_date': datetime.fromtimestamp(os.path.getctime(raw_path)).strftime('%Y-%m-%d %H:%M:%S'),
+            'upload_date': datetime.fromtimestamp(upload_timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+            'upload_timestamp': upload_timestamp,
             'icon': get_file_icon(file_type),
             'color': get_file_color(file_type),
             'line_count': line_count,
@@ -498,14 +500,15 @@ def get_paginated_files(page, per_page=12, search_query='', sort_by='date', sort
         if file_type:
             all_files = [f for f in all_files if f['type'].lower() == file_type.lower()]
         
+        reverse = (sort_order == 'desc')
         if sort_by == 'name':
-            all_files.sort(key=lambda x: x['original_name'].lower(), reverse=(sort_order == 'desc'))
+            all_files.sort(key=lambda x: (x['original_name'].lower(), x.get('upload_timestamp', 0)), reverse=reverse)
         elif sort_by == 'size':
-            all_files.sort(key=lambda x: x['size'], reverse=(sort_order == 'desc'))
+            all_files.sort(key=lambda x: (x['size'], x.get('upload_timestamp', 0)), reverse=reverse)
         elif sort_by == 'type':
-            all_files.sort(key=lambda x: x['type'].lower(), reverse=(sort_order == 'desc'))
+            all_files.sort(key=lambda x: (x['type'].lower(), x['original_name'].lower(), x.get('upload_timestamp', 0)), reverse=reverse)
         else:
-            all_files.sort(key=lambda x: x['upload_date'], reverse=(sort_order == 'desc'))
+            all_files.sort(key=lambda x: x.get('upload_timestamp', 0), reverse=reverse)
         
         total = len(all_files)
         start_idx = (page - 1) * per_page
@@ -1090,7 +1093,13 @@ def admin_private_files():
             'url': url_for('access_private_file', file_id=file_id, _external=True)+f"?p={data['password']}"
         })
     
-    files_list.sort(key=lambda x: x['date'], reverse=True)
+    def parse_private_date(item):
+        try:
+            return datetime.strptime(item['date'], '%Y-%m-%d %H:%M:%S')
+        except Exception:
+            return datetime.min
+
+    files_list.sort(key=parse_private_date, reverse=True)
     
     return render_template('admin_private_files.html', files=files_list)
 
