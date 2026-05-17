@@ -317,12 +317,16 @@ def detect_encoding(file_path):
             pass
         return 'latin1'
 
-def get_lexer_for_filename(filename):
-    """Визначає лексер для підсвічування синтаксису"""
+def get_best_lexer(filename, content=''):
+    """Визначає найкращий лексер для файлу на основі імені та вмісту."""
     try:
-        return lexers.get_lexer_for_filename(filename)
+        return lexers.get_lexer_for_filename(filename, content)
     except ClassNotFound:
-        return lexers.get_lexer_by_name('text')
+        try:
+            return lexers.guess_lexer(content)
+        except ClassNotFound:
+            return lexers.get_lexer_by_name('text')
+
 
 def is_text_file(file_path):
     """Перевіряє, чи є файл текстовим"""
@@ -412,6 +416,8 @@ def get_file_info(filename, folder='files'):
             'line_count': line_count,
             'is_text': is_text_file(raw_path),
             'is_video': is_video_file(raw_path),
+            'is_image': is_image_file(raw_path),
+            'is_audio': is_audio_file(raw_path),
             'is_archive': is_archive_file(raw_path),
             'download_count': download_count,
             'folder': folder
@@ -429,21 +435,28 @@ def get_file_preview(file_info):
                 'type': 'archive',
                 'content': None
             }
-        
+
         # Відео файли
         if file_info['is_video']:
             return {
                 'type': 'video',
                 'content': None
             }
-        
+
+        # Аудіо файли
+        if file_info.get('is_audio'):
+            return {
+                'type': 'audio',
+                'content': None
+            }
+
         # Текстові файли
         if file_info['is_text']:
             encoding = detect_encoding(file_info['path'])
             with open(file_info['path'], 'r', encoding=encoding, errors='replace') as f:
                 content = f.read(2048)
                 try:
-                    lexer = get_lexer_for_filename(file_info['original_name'])
+                    lexer = get_best_lexer(file_info['original_name'], content)
                     formatter = formatters.HtmlFormatter(style='monokai')
                     highlighted = pygments.highlight(content, lexer, formatter)
                     return {
@@ -451,26 +464,31 @@ def get_file_preview(file_info):
                         'content': highlighted,
                         'style': formatter.get_style_defs('.highlight')
                     }
-                except:
+                except Exception:
                     return {
                         'type': 'text',
                         'content': content
                     }
-        elif file_info['type'] == 'pdf':
+
+        # PDF preview
+        if file_info['type'] == 'pdf':
             return {
                 'type': 'pdf',
                 'content': None
             }
-        elif file_info['type'] in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp']:
+
+        # Зображення
+        if is_image_file(file_info['path']):
             return {
                 'type': 'image',
                 'content': None
             }
-        else:
-            return {
-                'type': 'unknown',
-                'content': None
-            }
+
+        # Інші
+        return {
+            'type': 'unknown',
+            'content': None
+        }
     except Exception as e:
         print(f"Error generating preview for {file_info['original_name']}: {str(e)}")
         return {
@@ -903,9 +921,13 @@ def download_skin(filename):
         path = safe_join(app.config['SKINS_FOLDER'], decoded_name)
         if not os.path.exists(path):
             return render_template('404.html'), 404
-        
-        log_download(decoded_name, 'skin', request.remote_addr)
-        return send_from_directory(app.config['SKINS_FOLDER'], filename, as_attachment=True)
+
+        preview = request.args.get('preview')
+        as_attachment = False if preview is not None else True
+        if not preview:
+            log_download(decoded_name, 'skin', request.remote_addr)
+
+        return send_from_directory(app.config['SKINS_FOLDER'], filename, as_attachment=as_attachment)
     except Exception as e:
         app.logger.error(f"Skin download error: {str(e)}")
         return render_template('404.html'), 404
@@ -964,30 +986,52 @@ def preview_pdf(filename):
 @app.route('/preview/full/<path:filename>')
 def preview_full_file(filename):
     """Повний перегляд файлу"""
-    file_info = get_file_info(filename, 'files')
-    if not file_info or not file_info['is_text']:
+    folder = request.args.get('folder', 'files')
+    file_info = get_file_info(filename, folder)
+    if not file_info:
         abort(404)
-    encoding = detect_encoding(file_info['path'])
-    try:
-        with open(file_info['path'], 'r', encoding=encoding, errors='replace') as f:
-            content = f.read()
+
+    preview_type = 'unknown'
+    content = None
+    style = ''
+
+    if file_info['is_text']:
+        preview_type = 'code'
+        encoding = detect_encoding(file_info['path'])
+        try:
+            with open(file_info['path'], 'r', encoding=encoding, errors='replace') as f:
+                content = f.read()
+                lexer = get_best_lexer(file_info['original_name'], content)
+                formatter = formatters.HtmlFormatter(style='monokai', linenos='table')
+                content = pygments.highlight(content, lexer, formatter)
+                style = formatter.get_style_defs('.highlight')
+        except Exception:
+            preview_type = 'text'
             try:
-                lexer = get_lexer_for_filename(file_info['original_name'])
-                formatter = formatters.HtmlFormatter(style='monokai')
-                highlighted = pygments.highlight(content, lexer, formatter)
-                return render_template('preview_full.html',
-                                    file=file_info,
-                                    content=highlighted,
-                                    style=formatter.get_style_defs('.highlight'),
-                                    is_logged_in=session.get('logged_in', False))
-            except:
-                return render_template('preview_full.html',
-                                    file=file_info,
-                                    content=content,
-                                    style='',
-                                    is_logged_in=session.get('logged_in', False))
-    except Exception as e:
-        return render_template('error.html', message=str(e)), 500
+                with open(file_info['path'], 'r', encoding=encoding, errors='replace') as f:
+                    content = f.read()
+            except Exception as e:
+                return render_template('error.html', message=str(e)), 500
+
+    elif file_info['type'] == 'pdf':
+        preview_type = 'pdf'
+    elif file_info['is_image']:
+        preview_type = 'image'
+    elif file_info['is_video']:
+        preview_type = 'video'
+    elif file_info.get('is_audio'):
+        preview_type = 'audio'
+    elif file_info['is_archive']:
+        preview_type = 'archive'
+    else:
+        preview_type = 'unknown'
+
+    return render_template('preview_full.html',
+                           file=file_info,
+                           content=content,
+                           style=style,
+                           preview_type=preview_type,
+                           is_logged_in=session.get('logged_in', False))
 
 @app.route('/qrcode/<path:filename>')
 def generate_qr(filename):
