@@ -8,10 +8,24 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# Bot helper
+def get_bot_username(token):
+    """Get Telegram bot username from token using getMe."""
+    if not token:
+        return None
+    try:
+        response = requests.get(f"https://api.telegram.org/bot{token}/getMe", timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        return data.get('result', {}).get('username')
+    except Exception as e:
+        print(f"Failed to resolve bot username from token: {e}")
+        return None
+
 # Конфігурація бота
 BOT_TOKEN = os.getenv("ADMIN_TELEGRAM_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_TELEGRAM_ID")
-
+BOT_USERNAME = get_bot_username(BOT_TOKEN)
 
 bot = telebot.TeleBot(BOT_TOKEN)
 

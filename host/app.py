@@ -37,6 +37,26 @@ logging.basicConfig(
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
+
+def resolve_telegram_bot_username(token):
+    """Resolve Telegram bot username from a token for templates."""
+    if not token:
+        return None
+    try:
+        response = requests.get(f"https://api.telegram.org/bot{token}/getMe", timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        return data.get('result', {}).get('username')
+    except Exception as e:
+        app.logger.warning(f"Unable to resolve bot username from token: {e}")
+        return None
+
+SKIN_TELEGRAM_TOKEN = os.getenv("SKIN_TELEGRAM_TOKEN")
+SKIN_BOT_USERNAME = resolve_telegram_bot_username(SKIN_TELEGRAM_TOKEN)
+SKIN_BOT_LINK = f"https://t.me/{SKIN_BOT_USERNAME}" if SKIN_BOT_USERNAME else None
+SKIN_BOT_DISPLAY = f"@{SKIN_BOT_USERNAME}" if SKIN_BOT_USERNAME else "Telegram bot"
+
+
 from module_loader import ModuleLoader
 module_loader = ModuleLoader(app)
 module_loader.load_all()
@@ -1247,7 +1267,7 @@ def api_file_downloads(filename):
 def skinbot_login():
     if session.get('skinbot_user_id'):
         return redirect(url_for('skinbot_dashboard'))
-    return render_template('skinbot_login.html')
+    return render_template('skinbot_login.html', skinbot_link=SKIN_BOT_LINK, skinbot_display=SKIN_BOT_DISPLAY)
 
 @app.route('/skinbot/verify', methods=['POST'])
 def skinbot_verify():
@@ -1332,7 +1352,9 @@ def skinbot_dashboard():
         
         return render_template('skinbot_dashboard.html', 
                              username=username,
-                             skins=skins)
+                             skins=skins,
+                             skinbot_link=SKIN_BOT_LINK,
+                             skinbot_display=SKIN_BOT_DISPLAY)
                              
     except Exception as e:
         app.logger.error(f"Dashboard error: {str(e)}")
