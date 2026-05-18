@@ -264,38 +264,54 @@
     <!-- Toast Notification -->
     <div id="toast" 
          class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50" style="display:none;">
-        <i class="fas fa-check mr-2"></i>Скопійовано до буферу обміну!
+        <i class="fas fa-check mr-2"></i>
+        <span id="toastMessage">Скопійовано до буферу обміну!</span>
     </div>
 
     <script>
         function copyContent() {
             const contentElement = document.getElementById('file-content');
+            if (!contentElement) {
+                showToast('Немає вмісту для копіювання', 'error');
+                return;
+            }
+
             let textToCopy = '';
-            
-            // Get plain text content
             const highlightDiv = contentElement.querySelector('.highlight');
             const plainTextDiv = contentElement.querySelector('.plain-text');
-            
+
             if (highlightDiv) {
-                // For code with syntax highlighting
-                const preTag = highlightDiv.querySelector('pre');
-                textToCopy = preTag ? preTag.innerText : highlightDiv.innerText;
+                const codePre = highlightDiv.querySelector('td.code pre, .code pre');
+                const fallbackPre = highlightDiv.querySelector('pre');
+                if (codePre && codePre.innerText.trim()) {
+                    textToCopy = codePre.innerText;
+                } else if (fallbackPre) {
+                    textToCopy = fallbackPre.innerText;
+                } else {
+                    textToCopy = highlightDiv.innerText;
+                }
             } else if (plainTextDiv) {
-                // For plain text
                 const preTag = plainTextDiv.querySelector('pre');
                 textToCopy = preTag ? preTag.innerText : plainTextDiv.innerText;
             } else {
                 textToCopy = contentElement.innerText;
             }
-            
-            // Copy to clipboard
-            navigator.clipboard.writeText(textToCopy).then(function() {
-                showToast();
-            }).catch(function(err) {
-                console.error('Помилка копіювання: ', err);
-                // Fallback for older browsers
+
+            if (!textToCopy.trim()) {
+                showToast('Вміст пустий', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    showToast('Скопійовано до буферу обміну!');
+                }).catch(function(err) {
+                    console.error('Помилка копіювання: ', err);
+                    fallbackCopyTextToClipboard(textToCopy);
+                });
+            } else {
                 fallbackCopyTextToClipboard(textToCopy);
-            });
+            }
         }
 
         function fallbackCopyTextToClipboard(text) {
@@ -310,17 +326,21 @@
             
             try {
                 document.execCommand('copy');
-                showToast();
+                showToast('Скопійовано до буферу обміну!');
             } catch (err) {
                 console.error('Fallback: Помилка копіювання', err);
+                showToast('Помилка копіювання', 'error');
             }
             
             document.body.removeChild(textArea);
         }
 
-        function showToast() {
+        function showToast(message = 'Скопійовано!', type = 'success') {
             const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
             toast.style.display = 'block';
+            toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
             toast.style.transform = 'translateX(0)';
             
             setTimeout(() => {

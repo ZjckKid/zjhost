@@ -205,7 +205,7 @@
                            title="Завантажити">
                             <i class="fas fa-download"></i>
                         </a>
-                        <button onclick="copyLink('{{ url_for('download_file', filename=file.original_name, _external=True) }}')"
+                        <button onclick='copyLink({{ url_for('download_file', filename=file.original_name, _external=True) | tojson }})'
                                 class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105"
                                 title="Копіювати посилання">
                             <i class="fas fa-link"></i>
@@ -328,11 +328,45 @@
 
         // Copy link function
         function copyLink(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('Посилання скопійовано!');
-            }).catch(() => {
+            if (!url) {
+                showToast('Немає посилання для копіювання', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Скопійовано до буферу обміну!');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(url);
+                });
+            } else {
+                fallbackCopyTextToClipboard(url);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('Скопійовано до буферу обміну!');
+                } else {
+                    showToast('Помилка копіювання', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback copy error:', err);
                 showToast('Помилка копіювання', 'error');
-            });
+            }
+
+            document.body.removeChild(textArea);
         }
 
         function showToast(message, type = 'success') {

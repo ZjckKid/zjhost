@@ -197,12 +197,18 @@
                         <i class="fas fa-code mr-2 text-blue-500"></i>
                         Попередній перегляд коду
                     </h3>
-                    <a href="{{ url_for('preview_full_file', filename=file.original_name, folder=file.folder) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg action-button">
-                        <i class="fas fa-expand-arrows-alt mr-2"></i>Повний перегляд
-                    </a>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="copyContent()"
+                                class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg action-button">
+                            <i class="fas fa-copy mr-2"></i>Копіювати
+                        </button>
+                        <a href="{{ url_for('preview_full_file', filename=file.original_name, folder=file.folder) }}" 
+                           class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg action-button">
+                            <i class="fas fa-expand-arrows-alt mr-2"></i>Повний перегляд
+                        </a>
+                    </div>
                 </div>
-                <div class="code-preview">
+                <div id="file-content" class="code-preview">
                     {{ preview.content|safe }}
                 </div>
 
@@ -212,12 +218,18 @@
                         <i class="fas fa-file-alt mr-2 text-green-500"></i>
                         Попередній перегляд тексту
                     </h3>
-                    <a href="{{ url_for('preview_full_file', filename=file.original_name, folder=file.folder) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg action-button">
-                        <i class="fas fa-expand-arrows-alt mr-2"></i>Повний перегляд
-                    </a>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="copyContent()"
+                                class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg action-button">
+                            <i class="fas fa-copy mr-2"></i>Копіювати
+                        </button>
+                        <a href="{{ url_for('preview_full_file', filename=file.original_name, folder=file.folder) }}" 
+                           class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-300 shadow-lg action-button">
+                            <i class="fas fa-expand-arrows-alt mr-2"></i>Повний перегляд
+                        </a>
+                    </div>
                 </div>
-                <div class="text-preview">{{ preview.content }}</div>
+                <div id="file-content" class="text-preview">{{ preview.content }}</div>
 
                 {% elif preview.type == 'image' %}
                 <div class="mb-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -346,7 +358,7 @@
                        class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-lg action-button font-medium">
                         <i class="fas fa-download mr-2"></i>Завантажити файл
                     </a>
-                    <button onclick="copyLink('{{ url_for('download_file', filename=file.original_name, _external=True) if file.folder == 'files' else url_for('download_skin', filename=file.original_name, _external=True) }}')"
+                    <button onclick='copyLink({{ (url_for('download_file', filename=file.original_name, _external=True) if file.folder == 'files' else url_for('download_skin', filename=file.original_name, _external=True)) | tojson }})'
                             class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg action-button font-medium">
                         <i class="fas fa-link mr-2"></i>Копіювати посилання
                     </button>
@@ -399,11 +411,75 @@
         }
 
         function copyLink(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('Посилання скопійовано!');
-            }).catch(() => {
+            if (!url) {
+                showToast('Немає посилання для копіювання', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Скопійовано до буферу обміну!');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(url);
+                });
+            } else {
+                fallbackCopyTextToClipboard(url);
+            }
+        }
+
+        function copyContent() {
+            const contentElement = document.getElementById('file-content');
+            if (!contentElement) {
+                showToast('Немає вмісту для копіювання', 'error');
+                return;
+            }
+
+            let textToCopy = contentElement.innerText;
+            if (!textToCopy.trim()) {
+                const preTag = contentElement.querySelector('pre');
+                textToCopy = preTag ? preTag.innerText : contentElement.textContent;
+            }
+
+            if (!textToCopy) {
+                showToast('Вміст пустий', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast('Скопійовано до буферу обміну!');
+                }).catch((err) => {
+                    console.error('Clipboard write error:', err);
+                    fallbackCopyTextToClipboard(textToCopy);
+                });
+            } else {
+                fallbackCopyTextToClipboard(textToCopy);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('Скопійовано до буферу обміну!');
+                } else {
+                    showToast('Помилка копіювання', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback copy error:', err);
                 showToast('Помилка копіювання', 'error');
-            });
+            }
+
+            document.body.removeChild(textArea);
         }
 
         function showToast(message, type = 'success') {

@@ -437,7 +437,7 @@
                        title="Завантажити">
                         <i class="fas fa-download"></i>
                     </a>
-                    <button onclick="copyLink('{{ url_for('download_file', filename=file.original_name, _external=True) }}')"
+                    <button onclick='copyLink({{ url_for('download_file', filename=file.original_name, _external=True) | tojson }})'
                             class="px-2 py-2 bg-purple-500/20 text-purple-200 rounded hover:bg-purple-500/40 transition-all duration-300 text-xs"
                             title="Копіювати посилання">
                         <i class="fas fa-link"></i>
@@ -929,11 +929,45 @@
 
         // Copy Link
         function copyLink(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                showNotification('Посилання скопійовано!', 'success');
-            }).catch(() => {
+            if (!url) {
+                showNotification('Немає посилання для копіювання', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('Скопійовано до буферу обміну!', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(url);
+                });
+            } else {
+                fallbackCopyTextToClipboard(url);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification('Скопійовано до буферу обміну!', 'success');
+                } else {
+                    showNotification('Помилка копіювання', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback copy error:', err);
                 showNotification('Помилка копіювання', 'error');
-            });
+            }
+
+            document.body.removeChild(textArea);
         }
 
         // Notification System

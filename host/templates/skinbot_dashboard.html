@@ -168,11 +168,11 @@
                     
                     <!-- Actions -->
                     <div class="space-y-2">
-                        <button onclick="copyLink('{{ skin.link }}')" 
+                        <button onclick='copyLink({{ skin.link | tojson }})' 
                                 class="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105">
                             <i class="fas fa-link mr-2"></i>Копіювати посилання
                         </button>
-                        <button onclick="copyCommand('{{ skin.link }}')" 
+                        <button onclick='copyCommand({{ skin.link | tojson }})' 
                                 class="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105">
                             <i class="fas fa-terminal mr-2"></i>Копіювати команду
                         </button>
@@ -258,20 +258,58 @@
         }
 
         function copyLink(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('Посилання скопійовано!');
-            }).catch(() => {
-                showToast('Помилка копіювання', 'error');
-            });
+            if (!url) {
+                showToast('Немає посилання для копіювання', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Посилання скопійовано!');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(url, 'Посилання скопійовано!');
+                });
+            } else {
+                fallbackCopyTextToClipboard(url, 'Посилання скопійовано!');
+            }
         }
 
         function copyCommand(url) {
             const command = `/skin url "${url}"`;
-            navigator.clipboard.writeText(command).then(() => {
-                showToast('Команду скопійовано!');
-            }).catch(() => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(command).then(() => {
+                    showToast('Команду скопійовано!');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(command, 'Команду скопійовано!');
+                });
+            } else {
+                fallbackCopyTextToClipboard(command, 'Команду скопійовано!');
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text, successMessage = 'Скопійовано!') {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(successMessage);
+                } else {
+                    showToast('Помилка копіювання', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback copy error:', err);
                 showToast('Помилка копіювання', 'error');
-            });
+            }
+
+            document.body.removeChild(textArea);
         }
 
         function deleteSkin(filename) {
