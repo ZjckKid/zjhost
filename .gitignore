@@ -19,3 +19,5 @@ host/files/
 host/skins/
 
 host/modules/*/__pycache__/
+
+bot_data/
