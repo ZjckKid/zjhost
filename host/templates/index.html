@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,262 +10,1356 @@
     <meta property="og:image" content="{{ url_for('photo', filename='oblachko.svg', _external=True) }}" />
     <meta property="og:url" content="https://host.zjck.eu/" />
     <title>ZJH Файлове сховище</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script>
+        (function() {
+            var saved = localStorage.getItem('zjh-theme');
+            var theme = saved || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        :root,
+        [data-theme="light"] {
+            --md-sys-color-primary: #4C5FE8;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #E1E4FF;
+            --md-sys-color-on-primary-container: #0F1B3D;
+
+            --md-sys-color-secondary: #0FA9D6;
+            --md-sys-color-secondary-container: #D2F1FA;
+            --md-sys-color-on-secondary-container: #003544;
+
+            --md-sys-color-error: #C4392C;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #FBE0DD;
+            --md-sys-color-on-error-container: #4A140C;
+
+            --md-sys-color-tertiary: #1E9E6B;
+            --md-sys-color-tertiary-container: #CFF5E2;
+            --md-sys-color-on-tertiary-container: #00341E;
+
+            --md-sys-color-surface: #FBFCFF;
+            --md-sys-color-surface-container-lowest: #FFFFFF;
+            --md-sys-color-surface-container-low: #F3F5FE;
+            --md-sys-color-surface-container: #EBEEFC;
+            --md-sys-color-surface-container-high: #E1E5FA;
+            --md-sys-color-surface-container-highest: #D6DCF7;
+            --md-sys-color-on-surface: #1A1B2C;
+            --md-sys-color-on-surface-variant: #45475C;
+
+            --md-sys-color-outline: #767892;
+            --md-sys-color-outline-variant: #C6C9E6;
+
+            --md-sys-color-background: #F3F5FE;
+
+            --brand-gradient: linear-gradient(135deg, #4F6BFF 0%, #38C6F0 100%);
+            --wash-1: rgba(79, 107, 255, 0.12);
+            --wash-2: rgba(56, 198, 240, 0.14);
+            --wash-3: rgba(176, 66, 155, 0.08);
+
+            --icon-accent-blue-bg: #DCE3FF;   --icon-accent-blue-fg: #1E2E7A;
+            --icon-accent-red-bg: #FBDFDA;    --icon-accent-red-fg: #7A2618;
+            --icon-accent-green-bg: #CFF5E2;  --icon-accent-green-fg: #0F5C36;
+            --icon-accent-amber-bg: #FDEACB;  --icon-accent-amber-fg: #6B4400;
+            --icon-accent-purple-bg: #FBDFF3; --icon-accent-purple-fg: #6B1B5C;
+            --icon-accent-cyan-bg: #D2F1FA;   --icon-accent-cyan-fg: #0A5D74;
+            --icon-accent-slate-bg: #E4E6F5;  --icon-accent-slate-fg: #33354A;
+
+            --scrim: rgba(20, 22, 34, 0.45);
+            --snackbar-bg: #2E3038;
+            --snackbar-fg: #F1F0F4;
+
+            --toggle-track-off: #E1E5FA;
+            --toggle-track-on: var(--brand-gradient);
+            --toggle-icon-off: #767892;
+
+            color-scheme: light;
         }
-        .card-hover {
-            transition: all 0.3s ease;
+
+        [data-theme="dark"] {
+            --md-sys-color-primary: #B4C1FF;
+            --md-sys-color-on-primary: #182A80;
+            --md-sys-color-primary-container: #2E3E9E;
+            --md-sys-color-on-primary-container: #DEE3FF;
+
+            --md-sys-color-secondary: #7FDBF5;
+            --md-sys-color-secondary-container: #045169;
+            --md-sys-color-on-secondary-container: #C3F0FF;
+
+            --md-sys-color-error: #FFB4A9;
+            --md-sys-color-on-error: #680600;
+            --md-sys-color-error-container: #93000A;
+            --md-sys-color-on-error-container: #FFDAD4;
+
+            --md-sys-color-tertiary: #7EDCA8;
+            --md-sys-color-tertiary-container: #0A5A34;
+            --md-sys-color-on-tertiary-container: #ADF4C6;
+
+            --md-sys-color-surface: #111219;
+            --md-sys-color-surface-container-lowest: #0A0B10;
+            --md-sys-color-surface-container-low: #191A23;
+            --md-sys-color-surface-container: #1D1F29;
+            --md-sys-color-surface-container-high: #272A36;
+            --md-sys-color-surface-container-highest: #323545;
+            --md-sys-color-on-surface: #E3E2EA;
+            --md-sys-color-on-surface-variant: #C4C6D8;
+
+            --md-sys-color-outline: #8D909E;
+            --md-sys-color-outline-variant: #3E4150;
+
+            --md-sys-color-background: #0D0E14;
+
+            --brand-gradient: linear-gradient(135deg, #6C82FF 0%, #4FD8F5 100%);
+            --wash-1: rgba(108, 130, 255, 0.18);
+            --wash-2: rgba(79, 216, 245, 0.15);
+            --wash-3: rgba(200, 110, 230, 0.10);
+
+            --icon-accent-blue-bg: #2A3363;    --icon-accent-blue-fg: #C6D0FF;
+            --icon-accent-red-bg: #5C231C;     --icon-accent-red-fg: #FFC3B8;
+            --icon-accent-green-bg: #103F27;   --icon-accent-green-fg: #A9F0C6;
+            --icon-accent-amber-bg: #4A3410;   --icon-accent-amber-fg: #FFD79A;
+            --icon-accent-purple-bg: #4A2043;  --icon-accent-purple-fg: #FAC3EA;
+            --icon-accent-cyan-bg: #0F3E4C;    --icon-accent-cyan-fg: #A6E7FA;
+            --icon-accent-slate-bg: #2B2E3D;   --icon-accent-slate-fg: #D3D5E6;
+
+            --scrim: rgba(0, 0, 0, 0.6);
+            --snackbar-bg: #E3E2EA;
+            --snackbar-fg: #1F2029;
+
+            --toggle-track-off: #272A36;
+            --toggle-track-on: var(--brand-gradient);
+            --toggle-icon-off: #8D909E;
+
+            color-scheme: dark;
         }
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+
+        :root {
+            --shape-xs: 8px;
+            --shape-sm: 14px;
+            --shape-md: 18px;
+            --shape-lg: 24px;
+            --shape-xl: 32px;
+            --shape-blob: 42% 58% 65% 35% / 45% 40% 60% 55%;
+            --shape-full: 999px;
+
+            --md-sys-elevation-1: 0px 1px 2px 0px rgba(0,0,0,0.24), 0px 2px 6px 1px rgba(0,0,0,0.12);
+            --md-sys-elevation-2: 0px 2px 4px 0px rgba(0,0,0,0.24), 0px 4px 12px 2px rgba(0,0,0,0.14);
+            --md-sys-elevation-3: 0px 3px 6px 0px rgba(0,0,0,0.26), 0px 6px 18px 3px rgba(0,0,0,0.16);
+
+            --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+            --ease-emphasized: cubic-bezier(0.3, 0, 0.1, 1);
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .search-glow:focus {
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        .floating-header {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.9);
+
+        html {
+            -webkit-font-smoothing: antialiased;
         }
-        .file-type-badge {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: white;
-            font-size: 0.75rem;
+
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Google Sans Text', 'Roboto', sans-serif;
+            background:
+                radial-gradient(720px 420px at 8% 0%, var(--wash-1), transparent 65%),
+                radial-gradient(680px 460px at 98% 4%, var(--wash-2), transparent 60%),
+                radial-gradient(600px 500px at 50% 100%, var(--wash-3), transparent 65%),
+                var(--md-sys-color-background);
+            background-attachment: fixed;
+            color: var(--md-sys-color-on-surface);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.35s var(--ease-standard), color 0.35s var(--ease-standard);
+        }
+
+        a { color: inherit; }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px clamp(16px, 4vw, 40px);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.7); }
+            70% { transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-6deg); }
+            75% { transform: rotate(6deg); }
+        }
+        @keyframes floatBlob {
+            0%, 100% { border-radius: var(--shape-blob); transform: translateY(0) rotate(0deg); }
+            50% { border-radius: 58% 42% 35% 65% / 55% 60% 40% 45%; transform: translateY(-4px) rotate(3deg); }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        /* Top App Bar */
+        .top-app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: color-mix(in srgb, var(--md-sys-color-surface-container-lowest) 85%, transparent);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 3px solid transparent;
+            border-image: var(--brand-gradient) 1;
+            transition: background-color 0.35s var(--ease-standard);
+        }
+        .top-app-bar-inner {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 10px clamp(12px, 4vw, 40px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex-shrink: 1;
+        }
+        .brand img {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            transition: transform 0.5s var(--ease-bounce);
+        }
+        .brand:hover img {
+            animation: wiggle 0.5s var(--ease-bounce);
+            transform: scale(1.08);
+        }
+        .brand h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--md-sys-color-on-surface);
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .app-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            flex-shrink: 0;
+        }
+        .app-bar-actions .m3-btn span:not(.material-symbols-rounded) {
+            /* button label text; hidden on very small screens, icon stays */
+        }
+
+        /* Theme toggle - Pixel-style switch with both icons always visible */
+        .theme-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 64px;
+            height: 34px;
+            border-radius: var(--shape-full);
+            border: none;
+            background: var(--toggle-track-off);
+            cursor: pointer;
+            padding: 0 8px;
+            transition: background-color 0.35s var(--ease-standard);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .theme-toggle-icon {
+            position: relative;
+            z-index: 2;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            transition: opacity 0.3s ease, transform 0.3s var(--ease-bounce);
+        }
+        .theme-toggle-icon.sun {
+            color: #E8A33D;
+        }
+        [data-theme="dark"] .theme-toggle-icon.sun {
+            color: #6B6E80;
+            opacity: 0.55;
+            transform: scale(0.85);
+        }
+        .theme-toggle-icon.moon {
+            color: #6B6E80;
+            opacity: 0.55;
+            transform: scale(0.85);
+        }
+        [data-theme="dark"] .theme-toggle-icon.moon {
+            color: #C7D3FF;
+            opacity: 1;
+            transform: scale(1);
+        }
+        [data-theme="light"] .theme-toggle-icon.sun,
+        :root:not([data-theme="dark"]) .theme-toggle-icon.sun {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .theme-toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--brand-gradient);
+            transform: translateX(0);
+            transition: transform 0.4s var(--ease-bounce);
+            box-shadow: var(--md-sys-elevation-1);
+            z-index: 1;
+        }
+        [data-theme="dark"] .theme-toggle-thumb {
+            transform: translateX(30px);
+        }
+
+        /* Buttons */
+        .m3-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 42px;
+            padding: 0 22px;
+            border: none;
+            border-radius: var(--shape-full);
+            font-family: inherit;
+            font-size: 0.875rem;
             font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 12px;
-            text-transform: uppercase;
+            letter-spacing: 0.1px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: box-shadow 0.2s var(--ease-standard), transform 0.15s var(--ease-bounce), filter 0.2s ease;
+            white-space: nowrap;
         }
-        .line-clamp-2 {
+        .m3-btn:active { transform: scale(0.95); }
+        .m3-btn .material-symbols-rounded { font-size: 20px; }
+        .m3-btn-filled {
+            background: var(--brand-gradient);
+            color: var(--md-sys-color-on-primary);
+        }
+        [data-theme="dark"] .m3-btn-filled { color: #0D1442; }
+        .m3-btn-filled:hover {
+            box-shadow: var(--md-sys-elevation-2);
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        .m3-btn-tonal {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+        }
+        .m3-btn-tonal:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-1px); }
+        .m3-btn-error {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+        .m3-btn-error:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-1px); }
+
+        .m3-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: var(--shape-full);
+            border: none;
+            background: transparent;
+            color: var(--md-sys-color-on-surface-variant);
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+        .m3-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+        .m3-icon-btn:active { transform: scale(0.9); }
+
+        /* Search / filter surface */
+        .filter-surface {
+            position: relative;
+            z-index: 40;
+            background: var(--md-sys-color-surface-container-low);
+            border-radius: var(--shape-xl);
+            padding: 20px;
+            margin: 24px 0 32px;
+            box-shadow: var(--md-sys-elevation-1);
+            animation: fadeInUp 0.5s var(--ease-emphasized) both;
+            transition: background-color 0.35s var(--ease-standard);
+        }
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: relative;
+        }
+        .search-field-wrap {
+            flex: 1;
+            min-width: 240px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-field-wrap .material-symbols-rounded.search-icon {
+            position: absolute;
+            left: 16px;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 20px;
+            pointer-events: none;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .search-field-wrap:focus-within .search-icon {
+            color: var(--md-sys-color-primary);
+            transform: scale(1.1);
+        }
+        .search-spinner {
+            position: absolute;
+            right: 16px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--md-sys-color-outline-variant);
+            border-top-color: var(--md-sys-color-primary);
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+        }
+        .search-spinner.active {
+            opacity: 1;
+            animation: spin 0.6s linear infinite;
+        }
+        .m3-field {
+            height: 48px;
+            padding: 0 16px;
+            border-radius: var(--shape-full);
+            border: 2px solid var(--md-sys-color-outline-variant);
+            background: var(--md-sys-color-surface-container-lowest);
+            color: var(--md-sys-color-on-surface);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.35s var(--ease-standard);
+            width: 100%;
+        }
+        .search-field-wrap .m3-field {
+            padding-left: 44px;
+            padding-right: 40px;
+        }
+        .m3-field:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+        }
+        .m3-field::placeholder { color: var(--md-sys-color-on-surface-variant); }
+
+        /* Custom dropdown (select replacement) */
+        .m3-dropdown {
+            position: relative;
+            min-width: 150px;
+        }
+        .m3-dropdown-trigger {
+            height: 48px;
+            width: 100%;
+            padding: 0 16px;
+            border-radius: var(--shape-full);
+            border: 2px solid var(--md-sys-color-outline-variant);
+            background: var(--md-sys-color-surface-container-lowest);
+            color: var(--md-sys-color-on-surface);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+        .m3-dropdown-trigger .material-symbols-rounded {
+            font-size: 20px;
+            color: var(--md-sys-color-on-surface-variant);
+            transition: transform 0.3s var(--ease-bounce);
+            flex-shrink: 0;
+        }
+        .m3-dropdown.open .m3-dropdown-trigger {
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+        }
+        .m3-dropdown.open .m3-dropdown-trigger .material-symbols-rounded {
+            transform: rotate(180deg);
+        }
+        .m3-dropdown-trigger-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .m3-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 100%;
+            background: var(--md-sys-color-surface-container-lowest);
+            border-radius: var(--shape-md);
+            box-shadow: var(--md-sys-elevation-3);
+            padding: 6px;
+            z-index: 30;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+        .m3-dropdown.open .m3-dropdown-menu {
+            display: flex;
+            animation: scaleIn 0.18s var(--ease-bounce);
+            transform-origin: top center;
+        }
+        .m3-dropdown-option {
+            padding: 10px 14px;
+            border-radius: var(--shape-sm);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: background-color 0.15s ease;
+            color: var(--md-sys-color-on-surface);
+        }
+        .m3-dropdown-option:hover {
+            background: var(--md-sys-color-surface-container-high);
+        }
+        .m3-dropdown-option.selected {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+        .m3-dropdown-option .material-symbols-rounded {
+            font-size: 18px;
+            opacity: 0;
+        }
+        .m3-dropdown-option.selected .material-symbols-rounded {
+            opacity: 1;
+        }
+
+        /* Pending search notice (many files, results not fully live) */
+        .search-status-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px 16px;
+            border-radius: var(--shape-md);
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            animation: fadeInUp 0.3s var(--ease-standard);
+        }
+        .search-status-bar.visible { display: flex; }
+        .search-status-bar .material-symbols-rounded { font-size: 18px; }
+        .search-status-bar .m3-btn {
+            margin-left: auto;
+            height: 32px;
+            padding: 0 14px;
+            font-size: 0.8125rem;
+        }
+
+        /* File grid + cards */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+            flex: 1;
+            align-content: start;
+        }
+
+        .file-card {
+            background: var(--md-sys-color-surface-container-low);
+            border-radius: var(--shape-lg);
+            padding: 20px;
+            box-shadow: var(--md-sys-elevation-1);
+            transition: box-shadow 0.25s var(--ease-standard), transform 0.25s var(--ease-bounce), background-color 0.35s var(--ease-standard), opacity 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            animation: fadeInUp 0.5s var(--ease-emphasized) both;
+            animation-delay: calc(var(--card-index, 0) * 40ms);
+        }
+        .file-card:hover {
+            box-shadow: var(--md-sys-elevation-2);
+            transform: translateY(-4px) scale(1.01);
+        }
+        .file-card.hidden-by-filter {
+            display: none;
+        }
+
+        .file-type-chip {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: inline-flex;
+            align-items: center;
+            height: 24px;
+            padding: 0 11px;
+            border-radius: var(--shape-full);
+            font-size: 0.6875rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .file-card-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 16px;
+            padding-right: 60px;
+        }
+        .file-icon {
+            flex-shrink: 0;
+            width: 46px;
+            height: 46px;
+            border-radius: var(--shape-blob);
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s var(--ease-bounce), background-color 0.35s var(--ease-standard);
+        }
+        .file-card:hover .file-icon {
+            animation: floatBlob 2.4s ease-in-out infinite;
+            transform: scale(1.08);
+        }
+        .file-icon .material-symbols-rounded { font-size: 24px; }
+
+        .icon-accent-blue   { background: var(--icon-accent-blue-bg);   color: var(--icon-accent-blue-fg); }
+        .icon-accent-red    { background: var(--icon-accent-red-bg);    color: var(--icon-accent-red-fg); }
+        .icon-accent-green  { background: var(--icon-accent-green-bg);  color: var(--icon-accent-green-fg); }
+        .icon-accent-amber  { background: var(--icon-accent-amber-bg);  color: var(--icon-accent-amber-fg); }
+        .icon-accent-purple { background: var(--icon-accent-purple-bg); color: var(--icon-accent-purple-fg); }
+        .icon-accent-cyan   { background: var(--icon-accent-cyan-bg);   color: var(--icon-accent-cyan-fg); }
+        .icon-accent-slate  { background: var(--icon-accent-slate-bg);  color: var(--icon-accent-slate-fg); }
+
+        .chip-accent-blue   { background: var(--icon-accent-blue-bg);   color: var(--icon-accent-blue-fg); }
+        .chip-accent-red    { background: var(--icon-accent-red-bg);    color: var(--icon-accent-red-fg); }
+        .chip-accent-green  { background: var(--icon-accent-green-bg);  color: var(--icon-accent-green-fg); }
+        .chip-accent-amber  { background: var(--icon-accent-amber-bg);  color: var(--icon-accent-amber-fg); }
+        .chip-accent-purple { background: var(--icon-accent-purple-bg); color: var(--icon-accent-purple-fg); }
+        .chip-accent-cyan   { background: var(--icon-accent-cyan-bg);   color: var(--icon-accent-cyan-fg); }
+        .chip-accent-slate  { background: var(--icon-accent-slate-bg);  color: var(--icon-accent-slate-fg); }
+
+        .file-card h3 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            line-height: 1.4;
+            word-break: break-word;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 2.8em;
         }
-        
-        /* Dark Mode */
-        
-        /* QR Button */
-        .qr-btn {
+        .file-card h3 mark {
+            background: color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);
+            color: inherit;
+            border-radius: 4px;
+            padding: 0 1px;
+        }
+
+        .file-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+        .file-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8125rem;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        .file-meta-row .material-symbols-rounded {
+            font-size: 16px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .file-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .file-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            border-radius: var(--shape-md);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s var(--ease-bounce);
+            text-decoration: none;
+        }
+        .file-action-btn:active { transform: scale(0.9); }
+        .file-action-btn .material-symbols-rounded { font-size: 20px; }
+        .action-view { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .action-view:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-2px); }
+        .action-download { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
+        .action-download:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-2px); }
+        .action-link { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+        .action-link:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-2px); }
+        .action-qr {
+            background: var(--md-sys-color-surface-container-high);
+            color: var(--md-sys-color-on-surface-variant);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease, box-shadow 0.15s ease, transform 0.15s var(--ease-bounce);
         }
-        .card-hover:hover .qr-btn {
+        .file-card:hover .action-qr { opacity: 1; }
+        .action-qr:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-2px); }
+
+        @media (max-width: 640px) {
+            .action-qr { opacity: 1; }
+        }
+
+        /* Pagination */
+        .pagination-wrap {
+            display: flex;
+            justify-content: center;
+            animation: fadeIn 0.5s var(--ease-standard) both;
+        }
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--md-sys-color-surface-container-low);
+            border-radius: var(--shape-full);
+            padding: 6px;
+            box-shadow: var(--md-sys-elevation-1);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 8px;
+            border-radius: var(--shape-full);
+            text-decoration: none;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background-color 0.15s ease, transform 0.15s var(--ease-bounce);
+        }
+        .page-link:hover { background: var(--md-sys-color-surface-container-high); transform: translateY(-1px); }
+        .page-link.active {
+            background: var(--brand-gradient);
+            color: #fff;
+        }
+        [data-theme="dark"] .page-link.active { color: #0D1442; }
+        .page-ellipsis { padding: 0 8px; color: var(--md-sys-color-on-surface-variant); }
+
+        /* Empty state */
+        .empty-state-wrap {
+            text-align: center;
+            padding: 64px 16px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .empty-state-card {
+            background: var(--md-sys-color-surface-container-low);
+            border-radius: var(--shape-xl);
+            padding: 48px 32px;
+            max-width: 420px;
+            margin: 0 auto;
+            box-shadow: var(--md-sys-elevation-1);
+            animation: scaleIn 0.4s var(--ease-bounce) both;
+        }
+        .empty-state-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: var(--shape-blob);
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: floatBlob 3s ease-in-out infinite;
+        }
+        .empty-state-icon .material-symbols-rounded { font-size: 36px; }
+        .empty-state-card h3 { font-size: 1.375rem; font-weight: 700; margin-bottom: 12px; }
+        .empty-state-card p { color: var(--md-sys-color-on-surface-variant); margin-bottom: 24px; }
+
+        /* QR Modal */
+        .qr-scrim {
+            position: fixed;
+            inset: 0;
+            background: var(--scrim);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+            animation: fadeIn 0.2s ease;
+        }
+        .qr-scrim.open { display: flex; }
+        .qr-dialog {
+            background: var(--md-sys-color-surface-container-lowest);
+            border-radius: var(--shape-xl);
+            padding: 24px;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: var(--md-sys-elevation-3);
+            animation: popIn 0.3s var(--ease-bounce);
+        }
+        .qr-dialog-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .qr-dialog-head h3 { font-size: 1.125rem; font-weight: 700; }
+        .qr-dialog-body { text-align: center; }
+        .qr-dialog-body img {
+            width: 100%;
+            max-width: 220px;
+            margin: 0 auto 16px;
+            border-radius: var(--shape-md);
+            background: #fff;
+            padding: 8px;
+        }
+        .qr-dialog-body p { color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; }
+
+        /* Toast (snackbar) */
+        .snackbar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--snackbar-bg);
+            color: var(--snackbar-fg);
+            padding: 14px 22px;
+            border-radius: var(--shape-full);
+            box-shadow: var(--md-sys-elevation-3);
+            z-index: 200;
+            transition: transform 0.3s var(--ease-bounce), opacity 0.25s ease, visibility 0.25s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            max-width: calc(100vw - 32px);
+        }
+        .snackbar.show {
+            transform: translateX(-50%) translateY(0);
             opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .snackbar.error {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        /* Wide-to-mid: keep everything on one line, shrink title first */
+        @media (max-width: 720px) {
+            .brand h1 { font-size: 1.0625rem; }
+            .m3-btn { padding: 0 16px; font-size: 0.8125rem; }
+        }
+
+        /* Small phones: collapse text labels on action buttons to icon-only,
+           keep theme toggle and brand fully visible and on one row */
+        @media (max-width: 560px) {
+            .top-app-bar-inner {
+                padding: 8px 12px;
+                gap: 8px;
+            }
+
+            .brand {
+                gap: 8px;
+            }
+
+            .brand img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .brand h1 {
+                font-size: 0.9375rem;
+            }
+
+            .app-bar-actions {
+                gap: 6px;
+            }
+
+            .app-bar-actions .m3-btn {
+                width: 42px;
+                height: 42px;
+                padding: 0;
+                border-radius: 50%;
+            }
+
+            .app-bar-actions .m3-btn span:not(.material-symbols-rounded) {
+                display: none;
+            }
+
+            /* Theme toggle */
+            .theme-toggle {
+                width: 58px;
+                height: 32px;
+                padding: 0 7px;
+            }
+
+            .theme-toggle-icon {
+                width: 16px;
+                height: 16px;
+                font-size: 15px;
+            }
+
+            .theme-toggle-thumb {
+                top: 3px;
+                left: 3px;
+                width: 26px;
+                height: 26px;
+            }
+
+            [data-theme="dark"] .theme-toggle-thumb {
+                transform: translateX(26px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 12px; }
+            .filter-surface { padding: 16px; border-radius: var(--shape-lg); }
+            .filter-row { flex-direction: column; }
+            .m3-dropdown { min-width: 100%; width: 100%; }
+            .m3-dropdown-trigger { height: 46px; }
+            .search-field-wrap .m3-field { height: 46px; }
+            .file-grid { grid-template-columns: 1fr; gap: 12px; }
+            .file-card { padding: 16px; }
+            .file-actions { gap: 6px; }
+        }
+
+        @media (max-width: 360px) {
+            .brand h1 { display: none; }
+            .top-app-bar-inner { justify-content: space-between; }
+        }
+
+        /* Large / ultra-wide screens: cap grid density so cards don't stretch too thin */
+        @media (min-width: 1900px) {
+            .file-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        }
+
+        /* ---------- Cursor spotlight + trail (subtle, desktop pointer only) ---------- */
+        .cursor-fx {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+        .cursor-fx.active {
+            /* soft light that follows the pointer, reacting with the page background */
+            background: radial-gradient(
+                220px circle at var(--fx-x, 50%) var(--fx-y, 50%),
+                color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent),
+                transparent 70%
+            );
+            transition: background-position 0.05s linear;
+        }
+        .cursor-dot {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--md-sys-color-secondary);
+            opacity: 0.55;
+            transform: translate(-50%, -50%);
+            will-change: transform, opacity;
+            animation: cursorDotFade 0.7s ease-out forwards;
+        }
+        @keyframes cursorDotFade {
+            0% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+        }
+        @media (hover: none), (pointer: coarse) {
+            .cursor-fx { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .cursor-fx { display: none; }
         }
     </style>
 </head>
-<body class="min-h-screen gradient-bg">
-    <!-- Header -->
-    <div class="floating-header sticky top-0 z-50 border-b border-white/20">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <img src="{{ url_for('photo', filename='oblachko.svg') }}" alt="Хмаринка" class="w-16 h-16">
-                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Файлове сховище
-                    </h1>
-                </div>
+<body>
+    <!-- Cursor spotlight + trail layer (desktop pointer only, subtle) -->
+    <div class="cursor-fx" id="cursorFx" aria-hidden="true"></div>
 
-                <div class="flex items-center space-x-3">
-                    
-                    {% if is_logged_in %}
-                    <a href="{{ url_for('admin') }}" 
-                       class="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-lg">
-                        <i class="fas fa-cog mr-2"></i>Адміністрування
-                    </a>
-                    <a href="{{ url_for('logout') }}" 
-                       class="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-lg">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Вийти
-                    </a>
-                    {% else %}
-                    {% if is_skinbot_logged %}
-                    <a href="{{ url_for('skinbot_dashboard') }}" 
-                       class="flex items-center px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-400 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 shadow-lg">
-                        <i class="fab fa-telegram mr-2"></i>SkinBot
-                    </a>
-                    {% else %}
-                    <a href="{{ url_for('skinbot_login') }}" 
-                       class="flex items-center px-4 py-2 bg-gradient-to-r from-blue-400 to-cyan-400 text-white rounded-lg hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 shadow-lg">
-                        <i class="fab fa-telegram mr-2"></i>SkinBot
-                    </a>
-                    {% endif %}
+    <!-- Top App Bar -->
+    <div class="top-app-bar">
+        <div class="top-app-bar-inner">
+            <div class="brand">
+                <img src="{{ url_for('photo', filename='oblachko.svg') }}" alt="Хмаринка">
+                <h1>Файлове сховище</h1>
+            </div>
 
-                    {% endif %}
-                </div>
+            <div class="app-bar-actions">
+                <button type="button" class="theme-toggle" id="themeToggle" aria-label="Перемкнути тему" title="Перемкнути тему">
+                    <span class="theme-toggle-icon sun">
+                        <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 1;">light_mode</span>
+                    </span>
+                    <span class="theme-toggle-icon moon">
+                        <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
+                    </span>
+                    <span class="theme-toggle-thumb"></span>
+                </button>
+
+                {% if is_logged_in %}
+                <a href="{{ url_for('admin') }}" class="m3-btn m3-btn-tonal" title="Адміністрування">
+                    <span class="material-symbols-rounded">settings</span>
+                    <span>Адміністрування</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="m3-btn m3-btn-error" title="Вийти">
+                    <span class="material-symbols-rounded">logout</span>
+                    <span>Вийти</span>
+                </a>
+                {% else %}
+                {% if is_skinbot_logged %}
+                <a href="{{ url_for('skinbot_dashboard') }}" class="m3-btn m3-btn-tonal" title="SkinBot">
+                    <span class="material-symbols-rounded">send</span>
+                    <span>SkinBot</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('skinbot_login') }}" class="m3-btn m3-btn-tonal" title="SkinBot">
+                    <span class="material-symbols-rounded">send</span>
+                    <span>SkinBot</span>
+                </a>
+                {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-8">
+    <div class="container">
         <!-- Search and Filters -->
-        <div class="bg-white/10 backdrop-filter backdrop-blur-lg rounded-xl p-6 mb-8 border border-white/20 shadow-xl">
-            <form method="GET" class="space-y-4">
-                <div class="flex flex-wrap gap-4">
-                    <!-- Search Input -->
-                    <div class="flex-1 min-w-64">
-                        <input type="text" 
-                               name="search" 
-                               value="{{ search_query }}" 
-                               placeholder="🔍 Пошук файлів..." 
-                               class="w-full px-4 py-3 rounded-lg border-0 bg-white/90 focus:bg-white search-glow focus:outline-none focus:ring-0 text-gray-800 placeholder-gray-500 shadow-lg">
+        <div class="filter-surface">
+            <form method="GET" id="filterForm">
+                <div class="filter-row">
+                    <!-- Search Input (realtime, client-side) -->
+                    <div class="search-field-wrap">
+                        <span class="material-symbols-rounded search-icon">search</span>
+                        <input type="text"
+                               name="search"
+                               id="searchInput"
+                               value="{{ search_query }}"
+                               placeholder="Пошук файлів"
+                               class="m3-field"
+                               autocomplete="off">
+                        <span class="search-spinner" id="searchSpinner"></span>
                     </div>
-                    
-                    <!-- File Type Filter -->
-                    <select name="type" 
-                            class="px-4 py-3 rounded-lg border-0 bg-white/90 focus:bg-white focus:outline-none text-gray-800 shadow-lg min-w-32">
-                        <option value="">Всі типи</option>
-                        {% for type in file_types %}
-                        <option value="{{ type }}" {% if type == file_type %}selected{% endif %}>{{ type.upper() }}</option>
-                        {% endfor %}
-                    </select>
-                    
-                    <!-- Sort Options -->
-                    <select name="sort" 
-                            class="px-4 py-3 rounded-lg border-0 bg-white/90 focus:bg-white focus:outline-none text-gray-800 shadow-lg">
-                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>За датою</option>
-                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>За іменем</option>
-                        <option value="size" {% if sort_by == 'size' %}selected{% endif %}>За розміром</option>
-                        <option value="type" {% if sort_by == 'type' %}selected{% endif %}>За типом</option>
-                    </select>
-                    
-                    <!-- Sort Order -->
-                    <select name="order" 
-                            class="px-4 py-3 rounded-lg border-0 bg-white/90 focus:bg-white focus:outline-none text-gray-800 shadow-lg">
-                        <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>↓ Спадання</option>
-                        <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>↑ Зростання</option>
-                    </select>
-                    
-                    <!-- Search Button -->
-                    <button type="submit" 
-                            class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-lg transform hover:scale-105">
-                        <i class="fas fa-search mr-2"></i>Знайти
+
+                    <!-- File Type Filter (custom dropdown) -->
+                    <div class="m3-dropdown" id="typeDropdown" data-name="type">
+                        <input type="hidden" name="type" id="typeInput" value="{{ file_type }}">
+                        <button type="button" class="m3-dropdown-trigger">
+                            <span class="m3-dropdown-trigger-label">{{ file_type.upper() if file_type else 'Всі типи' }}</span>
+                            <span class="material-symbols-rounded">expand_more</span>
+                        </button>
+                        <div class="m3-dropdown-menu">
+                            <div class="m3-dropdown-option {{ 'selected' if not file_type }}" data-value="">
+                                <span>Всі типи</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            {% for type in file_types %}
+                            <div class="m3-dropdown-option {{ 'selected' if type == file_type }}" data-value="{{ type }}">
+                                <span>{{ type.upper() }}</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Sort Options (custom dropdown) -->
+                    <div class="m3-dropdown" id="sortDropdown" data-name="sort">
+                        <input type="hidden" name="sort" id="sortInput" value="{{ sort_by }}">
+                        <button type="button" class="m3-dropdown-trigger">
+                            <span class="m3-dropdown-trigger-label" data-labels='{"date":"За датою","name":"За іменем","size":"За розміром","type":"За типом"}'>
+                                {{ {'date': 'За датою', 'name': 'За іменем', 'size': 'За розміром', 'type': 'За типом'}[sort_by] if sort_by in ['date','name','size','type'] else 'За датою' }}
+                            </span>
+                            <span class="material-symbols-rounded">expand_more</span>
+                        </button>
+                        <div class="m3-dropdown-menu">
+                            <div class="m3-dropdown-option {{ 'selected' if sort_by == 'date' }}" data-value="date">
+                                <span>За датою</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            <div class="m3-dropdown-option {{ 'selected' if sort_by == 'name' }}" data-value="name">
+                                <span>За іменем</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            <div class="m3-dropdown-option {{ 'selected' if sort_by == 'size' }}" data-value="size">
+                                <span>За розміром</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            <div class="m3-dropdown-option {{ 'selected' if sort_by == 'type' }}" data-value="type">
+                                <span>За типом</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort Order (custom dropdown) -->
+                    <div class="m3-dropdown" id="orderDropdown" data-name="order">
+                        <input type="hidden" name="order" id="orderInput" value="{{ sort_order }}">
+                        <button type="button" class="m3-dropdown-trigger">
+                            <span class="m3-dropdown-trigger-label">{{ 'Спадання' if sort_order != 'asc' else 'Зростання' }}</span>
+                            <span class="material-symbols-rounded">expand_more</span>
+                        </button>
+                        <div class="m3-dropdown-menu">
+                            <div class="m3-dropdown-option {{ 'selected' if sort_order != 'asc' }}" data-value="desc">
+                                <span>Спадання</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            <div class="m3-dropdown-option {{ 'selected' if sort_order == 'asc' }}" data-value="asc">
+                                <span>Зростання</span>
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Button (fallback for server-side search on large sets) -->
+                    <button type="submit" class="m3-btn m3-btn-filled" id="searchSubmitBtn">
+                        <span class="material-symbols-rounded">search</span>
+                        Знайти
                     </button>
+                </div>
+
+                <!-- Notice shown when the current page has many files: live search only covers loaded cards -->
+                <div class="search-status-bar" id="searchStatusBar">
+                    <span class="material-symbols-rounded">info</span>
+                    <span>Показано результати серед завантажених файлів. Для повного пошуку по всьому сховищу натисніть "Пошук вже"</span>
+                    <button type="submit" class="m3-btn m3-btn-tonal">Пошук вже</button>
                 </div>
             </form>
         </div>
-        
+
         {% if files %}
         <!-- Files Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div class="file-grid" id="fileGrid" data-total-loaded="{{ files|length }}">
             {% for file in files %}
-            <div class="bg-white/95 backdrop-filter backdrop-blur-sm rounded-xl shadow-xl card-hover overflow-hidden border border-white/30">
-                <div class="p-6 relative">
-                    <div class="absolute top-2 right-2">
-                        <span class="file-type-badge">{{ file.type.upper() }}</span>
+            {% set fa_to_symbol = {
+                'fa-file-pdf': 'picture_as_pdf',
+                'fa-file-word': 'description',
+                'fa-file-excel': 'table_chart',
+                'fa-file-powerpoint': 'slideshow',
+                'fa-file-alt': 'article',
+                'fa-file-text': 'article',
+                'fa-file-image': 'image',
+                'fa-file-video': 'movie',
+                'fa-file-audio': 'music_note',
+                'fa-file-archive': 'folder_zip',
+                'fa-file-code': 'code',
+                'fa-file-csv': 'csv',
+                'fa-file': 'draft'
+            } %}
+            {% set icon_accents = {
+                'picture_as_pdf': 'accent-red',
+                'description': 'accent-blue',
+                'table_chart': 'accent-green',
+                'slideshow': 'accent-amber',
+                'article': 'accent-slate',
+                'image': 'accent-purple',
+                'movie': 'accent-purple',
+                'music_note': 'accent-purple',
+                'folder_zip': 'accent-amber',
+                'code': 'accent-cyan',
+                'csv': 'accent-green',
+                'draft': 'accent-slate'
+            } %}
+            {% set symbol = fa_to_symbol.get(file.icon, 'draft') %}
+            {% set accent = icon_accents.get(symbol, 'accent-slate') %}
+            <div class="file-card"
+                 style="--card-index: {{ loop.index0 }}"
+                 data-name="{{ file.original_name|lower }}"
+                 data-type="{{ file.type|lower }}">
+                <span class="file-type-chip chip-{{ accent }}">{{ file.type.upper() }}</span>
+
+                <div class="file-card-head">
+                    <div class="file-icon icon-{{ accent }}">
+                        <span class="material-symbols-rounded">{{ symbol }}</span>
                     </div>
-                    
-                    <div class="flex items-start mb-4 mt-2">
-                        <div class="flex-shrink-0 mr-4">
-                            <div class="w-12 h-12 rounded-lg bg-gradient-to-br {{ file.color.replace('text-', 'from-').replace('-500', '-400') }} to-{{ file.color.split('-')[1] }}-600 flex items-center justify-center shadow-lg">
-                                <i class="fas {{ file.icon }} text-white text-lg"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-semibold text-gray-800 text-sm leading-tight mb-2 line-clamp-2" title="{{ file.original_name }}">
-                                {{ file.original_name }}
-                            </h3>
-                        </div>
+                    <h3 title="{{ file.original_name }}" data-original-text="{{ file.original_name }}">{{ file.original_name }}</h3>
+                </div>
+
+                <div class="file-meta">
+                    <div class="file-meta-row">
+                        <span class="material-symbols-rounded">calendar_today</span>
+                        <span>{{ file.upload_date }}</span>
                     </div>
-                    
-                    <div class="text-xs text-gray-600 space-y-1 mb-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar-alt w-4 text-gray-400 mr-2"></i>
-                            <span>{{ file.upload_date }}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-weight-hanging w-4 text-gray-400 mr-2"></i>
-                            <span>{{ file.formatted_size }}</span>
-                        </div>
-                        {% if file.line_count > 0 %}
-                        <div class="flex items-center">
-                            <i class="fas fa-code w-4 text-gray-400 mr-2"></i>
-                            <span>{{ file.line_count }} рядків</span>
-                        </div>
-                        {% endif %}
-                        {% if file.download_count > 0 %}
-                        <div class="flex items-center">
-                            <i class="fas fa-download w-4 text-gray-400 mr-2"></i>
-                            <span>{{ file.download_count }} завантажень</span>
-                        </div>
-                        {% endif %}
+                    <div class="file-meta-row">
+                        <span class="material-symbols-rounded">scale</span>
+                        <span>{{ file.formatted_size }}</span>
                     </div>
-                    
-                    <div class="grid grid-cols-4 gap-2">
-                        <a href="{{ url_for('preview_file', filename=file.original_name) }}" 
-                           class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg text-center hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105"
-                           title="Переглянути">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ url_for('download_file', filename=file.original_name) }}" 
-                           class="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 rounded-lg text-center hover:from-green-600 hover:to-green-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105"
-                           title="Завантажити">
-                            <i class="fas fa-download"></i>
-                        </a>
-                        <button onclick='copyLink({{ url_for('download_file', filename=file.original_name, _external=True) | tojson }})'
-                                class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105"
-                                title="Копіювати посилання">
-                            <i class="fas fa-link"></i>
-                        </button>
-                        <button onclick="showQR('{{ file.original_name }}')"
-                                class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300 text-sm font-medium shadow-md transform hover:scale-105 qr-btn"
-                                title="QR код">
-                            <i class="fas fa-qrcode"></i>
-                        </button>
+                    {% if file.line_count > 0 %}
+                    <div class="file-meta-row">
+                        <span class="material-symbols-rounded">code</span>
+                        <span>{{ file.line_count }} рядків</span>
                     </div>
+                    {% endif %}
+                    {% if file.download_count > 0 %}
+                    <div class="file-meta-row">
+                        <span class="material-symbols-rounded">download</span>
+                        <span>{{ file.download_count }} завантажень</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="file-actions">
+                    <a href="{{ url_for('preview_file', filename=file.original_name) }}"
+                       class="file-action-btn action-view"
+                       title="Переглянути">
+                        <span class="material-symbols-rounded">visibility</span>
+                    </a>
+                    <a href="{{ url_for('download_file', filename=file.original_name) }}"
+                       class="file-action-btn action-download"
+                       title="Завантажити">
+                        <span class="material-symbols-rounded">download</span>
+                    </a>
+                    <button onclick='copyLink({{ url_for('download_file', filename=file.original_name, _external=True) | tojson }})'
+                            class="file-action-btn action-link"
+                            title="Копіювати посилання">
+                        <span class="material-symbols-rounded">link</span>
+                    </button>
+                    <button onclick="showQR('{{ file.original_name }}')"
+                            class="file-action-btn action-qr"
+                            title="QR код">
+                        <span class="material-symbols-rounded">qr_code_2</span>
+                    </button>
                 </div>
             </div>
             {% endfor %}
         </div>
-        
+
+        <!-- No live-search results state -->
+        <div class="empty-state-wrap" id="noLiveResults" style="display:none;">
+            <div class="empty-state-card">
+                <div class="empty-state-icon">
+                    <span class="material-symbols-rounded">manage_search</span>
+                </div>
+                <h3>Нічого не знайдено серед завантажених</h3>
+                <p>Спробуйте інший запит, або запустіть повний пошук по всьому сховищу.</p>
+                <button type="submit" form="filterForm" class="m3-btn m3-btn-filled">
+                    <span class="material-symbols-rounded">search</span>
+                    Повний пошук
+                </button>
+            </div>
+        </div>
+
         <!-- Pagination -->
         {% if total_pages > 1 %}
-        <div class="flex justify-center">
-            <div class="flex items-center space-x-2 bg-white/10 backdrop-filter backdrop-blur-lg rounded-xl p-4 border border-white/20 shadow-xl">
+        <div class="pagination-wrap" id="paginationWrap">
+            <div class="pagination">
                 {% if page > 1 %}
-                <a href="?page={{ page - 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" 
-                   class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-md">
-                    <i class="fas fa-chevron-left"></i>
+                <a href="?page={{ page - 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}"
+                   class="page-link">
+                    <span class="material-symbols-rounded">chevron_left</span>
                 </a>
                 {% endif %}
-                
+
                 {% for p in range(1, total_pages + 1) %}
                     {% if p == page %}
-                    <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg shadow-lg font-semibold">
-                        {{ p }}
-                    </span>
+                    <span class="page-link active">{{ p }}</span>
                     {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
-                    <a href="?page={{ p }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" 
-                       class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-md">
+                    <a href="?page={{ p }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}"
+                       class="page-link">
                         {{ p }}
                     </a>
                     {% elif p == page - 3 or p == page + 3 %}
-                    <span class="px-2 py-2 text-white/70">...</span>
+                    <span class="page-ellipsis">…</span>
                     {% endif %}
                 {% endfor %}
-                
+
                 {% if page < total_pages %}
-                <a href="?page={{ page + 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" 
-                   class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-md">
-                    <i class="fas fa-chevron-right"></i>
+                <a href="?page={{ page + 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}"
+                   class="page-link">
+                    <span class="material-symbols-rounded">chevron_right</span>
                 </a>
                 {% endif %}
             </div>
         </div>
         {% endif %}
-        
+
         {% else %}
         <!-- Empty State -->
-        <div class="text-center py-16">
-            <div class="bg-white/95 backdrop-filter backdrop-blur-sm rounded-2xl p-12 max-w-md mx-auto shadow-2xl">
-                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <i class="fas fa-folder-open text-white text-3xl"></i>
+        <div class="empty-state-wrap">
+            <div class="empty-state-card">
+                <div class="empty-state-icon">
+                    <span class="material-symbols-rounded">folder_open</span>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">Файли не знайдено</h3>
-                <p class="text-gray-600 mb-6">
+                <h3>Файли не знайдено</h3>
+                <p>
                     {% if search_query %}
                         За запитом "{{ search_query }}" нічого не знайдено
                     {% else %}
@@ -273,9 +1367,9 @@
                     {% endif %}
                 </p>
                 {% if search_query %}
-                <a href="{{ url_for('index') }}" 
-                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-lg transform hover:scale-105">
-                    <i class="fas fa-arrow-left mr-2"></i>Показати всі файли
+                <a href="{{ url_for('index') }}" class="m3-btn m3-btn-filled">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                    Показати всі файли
                 </a>
                 {% endif %}
             </div>
@@ -284,59 +1378,228 @@
     </div>
 
     <!-- QR Modal -->
-    <div id="qrModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-800">QR Код</h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
+    <div id="qrModal" class="qr-scrim">
+        <div class="qr-dialog">
+            <div class="qr-dialog-head">
+                <h3>QR Код</h3>
+                <button onclick="closeQRModal()" class="m3-icon-btn">
+                    <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <div class="text-center">
-                <img id="qrImage" src="" alt="QR Code" class="mx-auto mb-4 rounded-lg">
-                <p class="text-sm text-gray-600">Скануйте для завантаження</p>
+            <div class="qr-dialog-body">
+                <img id="qrImage" src="" alt="QR Code">
+                <p>Скануйте для завантаження</p>
             </div>
         </div>
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50" style="display:none;">
-        <i class="fas fa-check mr-2"></i>
+    <div id="toast" class="snackbar">
+        <span class="material-symbols-rounded">check</span>
         <span id="toastMessage">Посилання скопійовано!</span>
     </div>
 
     <script>
+        /* ---------- Cursor spotlight + trail (subtle, Material-style) ---------- */
+        (function() {
+            const isCoarsePointer = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (isCoarsePointer || reducedMotion) return;
 
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
+            const fx = document.getElementById('cursorFx');
+            if (!fx) return;
+
+            let lastDotTime = 0;
+            const DOT_INTERVAL_MS = 55; // spacing between trail dots, keeps it light
+            let rafPending = false;
+            let lastX = 0, lastY = 0;
+
+            fx.classList.add('active');
+
+            function updateSpotlight(x, y) {
+                fx.style.setProperty('--fx-x', x + 'px');
+                fx.style.setProperty('--fx-y', y + 'px');
+            }
+
+            function spawnDot(x, y) {
+                const dot = document.createElement('span');
+                dot.className = 'cursor-dot';
+                dot.style.left = x + 'px';
+                dot.style.top = y + 'px';
+                fx.appendChild(dot);
+                dot.addEventListener('animationend', function() {
+                    dot.remove();
+                }, { once: true });
+            }
+
+            window.addEventListener('mousemove', function(e) {
+                lastX = e.clientX;
+                lastY = e.clientY;
+
+                if (!rafPending) {
+                    rafPending = true;
+                    requestAnimationFrame(function() {
+                        updateSpotlight(lastX, lastY);
+                        rafPending = false;
+                    });
+                }
+
+                const now = performance.now();
+                if (now - lastDotTime > DOT_INTERVAL_MS) {
+                    spawnDot(lastX, lastY);
+                    lastDotTime = now;
+                }
+            }, { passive: true });
+
+            window.addEventListener('mouseleave', function() {
+                updateSpotlight(-9999, -9999);
+            });
+        })();
+
+        /* ---------- Theme toggle ---------- */
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('zjh-theme', next);
+        });
+
+        /* ---------- Custom dropdowns ---------- */
+        document.querySelectorAll('.m3-dropdown').forEach(function(dropdown) {
+            const trigger = dropdown.querySelector('.m3-dropdown-trigger');
+            const label = dropdown.querySelector('.m3-dropdown-trigger-label');
+            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+            const options = dropdown.querySelectorAll('.m3-dropdown-option');
+
+            trigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const wasOpen = dropdown.classList.contains('open');
+                document.querySelectorAll('.m3-dropdown.open').forEach(function(d) { d.classList.remove('open'); });
+                if (!wasOpen) dropdown.classList.add('open');
+            });
+
+            options.forEach(function(opt) {
+                opt.addEventListener('click', function() {
+                    options.forEach(function(o) { o.classList.remove('selected'); });
+                    opt.classList.add('selected');
+                    hiddenInput.value = opt.dataset.value;
+                    label.textContent = opt.querySelector('span').textContent;
+                    dropdown.classList.remove('open');
+
+                    // Type / sort / order changes should re-trigger form submit only if
+                    // we already have a search query typed (keeps behavior consistent),
+                    // otherwise just update state — sort/order/type require server-side reload
+                    // since they operate on the full dataset, not just the loaded page.
+                    document.getElementById('filterForm').submit();
+                });
+            });
+        });
+
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.m3-dropdown.open').forEach(function(d) { d.classList.remove('open'); });
+        });
+
+        /* ---------- Realtime client-side search ---------- */
+        const searchInput = document.getElementById('searchInput');
+        const searchSpinner = document.getElementById('searchSpinner');
+        const fileGrid = document.getElementById('fileGrid');
+        const searchStatusBar = document.getElementById('searchStatusBar');
+        const noLiveResults = document.getElementById('noLiveResults');
+        const paginationWrap = document.getElementById('paginationWrap');
+        const searchSubmitBtn = document.getElementById('searchSubmitBtn');
+
+        // Threshold above which we consider the loaded page "large" and surface
+        // a hint that live filtering only covers what's already on screen.
+        const LARGE_SET_THRESHOLD = 60;
+        const loadedCount = fileGrid ? parseInt(fileGrid.dataset.totalLoaded || '0', 10) : 0;
+
+        function highlightMatch(el, query) {
+            const original = el.dataset.originalText;
+            if (!query) {
+                el.textContent = original;
+                return;
+            }
+            const idx = original.toLowerCase().indexOf(query.toLowerCase());
+            if (idx === -1) {
+                el.textContent = original;
+                return;
+            }
+            const before = original.slice(0, idx);
+            const match = original.slice(idx, idx + query.length);
+            const after = original.slice(idx + query.length);
+            el.innerHTML = '';
+            el.append(document.createTextNode(before));
+            const mark = document.createElement('mark');
+            mark.textContent = match;
+            el.appendChild(mark);
+            el.append(document.createTextNode(after));
         }
 
-        // QR Functions
+        function runLiveFilter() {
+            if (!fileGrid) return;
+            const query = searchInput.value.trim().toLowerCase();
+            const cards = fileGrid.querySelectorAll('.file-card');
+            let visibleCount = 0;
+
+            cards.forEach(function(card) {
+                const name = card.dataset.name || '';
+                const matches = !query || name.includes(query);
+                card.classList.toggle('hidden-by-filter', !matches);
+                if (matches) visibleCount++;
+                const h3 = card.querySelector('h3');
+                if (h3) highlightMatch(h3, query);
+            });
+
+            const showLargeNotice = query.length > 0 && loadedCount >= LARGE_SET_THRESHOLD;
+            searchStatusBar.classList.toggle('visible', showLargeNotice);
+
+            if (noLiveResults) {
+                noLiveResults.style.display = (query.length > 0 && visibleCount === 0) ? 'flex' : 'none';
+            }
+            if (paginationWrap) {
+                paginationWrap.style.display = query.length > 0 ? 'none' : 'flex';
+            }
+        }
+
+        let debounceTimer;
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                searchSpinner.classList.add('active');
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    runLiveFilter();
+                    searchSpinner.classList.remove('active');
+                }, 120);
+            });
+
+            // Run once on load in case of pre-filled query (e.g. back navigation)
+            if (searchInput.value.trim()) {
+                runLiveFilter();
+            }
+        }
+
+        /* ---------- QR Functions ---------- */
         function showQR(filename) {
             const qrImage = document.getElementById('qrImage');
             qrImage.src = `/qrcode/${encodeURIComponent(filename)}`;
-            document.getElementById('qrModal').classList.remove('hidden');
-            document.getElementById('qrModal').classList.add('flex');
+            document.getElementById('qrModal').classList.add('open');
         }
 
         function closeQRModal() {
-            document.getElementById('qrModal').classList.add('hidden');
-            document.getElementById('qrModal').classList.remove('flex');
+            document.getElementById('qrModal').classList.remove('open');
         }
 
-        // Copy link function
+        /* ---------- Copy link ---------- */
         function copyLink(url) {
             if (!url) {
                 showToast('Немає посилання для копіювання', 'error');
                 return;
             }
-
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
+                navigator.clipboard.writeText(url).then(function() {
                     showToast('Скопійовано до буферу обміну!');
-                }).catch(() => {
+                }).catch(function() {
                     fallbackCopyTextToClipboard(url);
                 });
             } else {
@@ -353,45 +1616,40 @@
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-
             try {
                 const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast('Скопійовано до буферу обміну!');
-                } else {
-                    showToast('Помилка копіювання', 'error');
-                }
+                showToast(successful ? 'Скопійовано до буферу обміну!' : 'Помилка копіювання', successful ? 'success' : 'error');
             } catch (err) {
                 console.error('Fallback copy error:', err);
                 showToast('Помилка копіювання', 'error');
             }
-
             document.body.removeChild(textArea);
         }
 
+        let toastTimeout;
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
-            
+            const icon = toast.querySelector('.material-symbols-rounded');
+            clearTimeout(toastTimeout);
             toastMessage.textContent = message;
-            toast.style.display = 'block';
-            toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
-            toast.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 300);
-            }, 3000);
+            toast.classList.toggle('error', type === 'error');
+            icon.textContent = type === 'error' ? 'error' : 'check';
+            toast.classList.add('show');
+            toastTimeout = setTimeout(function() { toast.classList.remove('show'); }, 3000);
         }
 
-        // Keyboard shortcut for search
+        /* ---------- Keyboard shortcut ---------- */
         document.addEventListener('keydown', function(e) {
             if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
                 e.preventDefault();
-                document.querySelector('input[name="search"]').focus();
+                searchInput && searchInput.focus();
             }
+        });
+
+        /* ---------- Close QR modal on scrim click ---------- */
+        document.getElementById('qrModal').addEventListener('click', function(e) {
+            if (e.target === this) closeQRModal();
         });
     </script>
 </body>
