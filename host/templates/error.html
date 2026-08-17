@@ -1,19 +1,178 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('photo', filename='oblachko.svg') }}" />
     <title>ZJH Помилка</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script>
+        (function() {
+            var saved = localStorage.getItem('zjh-theme');
+            var theme = saved || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <style>
+        :root,
+        [data-theme="light"] {
+            --md-sys-color-primary: #4C5FE8;
+            --md-sys-color-on-primary: #FFFFFF;
+
+            --md-sys-color-error: #C4392C;
+            --md-sys-color-error-container: #FBE0DD;
+            --md-sys-color-on-error-container: #4A140C;
+
+            --md-sys-color-surface-container-low: #F3F5FE;
+            --md-sys-color-on-surface: #1A1B2C;
+            --md-sys-color-on-surface-variant: #45475C;
+            --md-sys-color-background: #F3F5FE;
+
+            --brand-gradient: linear-gradient(135deg, #4F6BFF 0%, #38C6F0 100%);
+            --wash-1: rgba(79, 107, 255, 0.12);
+            --wash-2: rgba(56, 198, 240, 0.14);
+            --wash-3: rgba(176, 66, 155, 0.08);
+
+            color-scheme: light;
+        }
+
+        [data-theme="dark"] {
+            --md-sys-color-primary: #B4C1FF;
+            --md-sys-color-on-primary: #182A80;
+
+            --md-sys-color-error: #FFB4A9;
+            --md-sys-color-error-container: #93000A;
+            --md-sys-color-on-error-container: #FFDAD4;
+
+            --md-sys-color-surface-container-low: #191A23;
+            --md-sys-color-on-surface: #E3E2EA;
+            --md-sys-color-on-surface-variant: #C4C6D8;
+            --md-sys-color-background: #0D0E14;
+
+            --brand-gradient: linear-gradient(135deg, #6C82FF 0%, #4FD8F5 100%);
+            --wash-1: rgba(108, 130, 255, 0.18);
+            --wash-2: rgba(79, 216, 245, 0.15);
+            --wash-3: rgba(200, 110, 230, 0.10);
+
+            color-scheme: dark;
+        }
+
+        :root {
+            --shape-xl: 32px;
+            --shape-full: 999px;
+            --md-sys-elevation-2: 0px 2px 4px 0px rgba(0,0,0,0.24), 0px 4px 12px 2px rgba(0,0,0,0.14);
+            --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+            --ease-emphasized: cubic-bezier(0.3, 0, 0.1, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-font-smoothing: antialiased; }
+        html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+
+        body {
+            font-family: 'Google Sans Text', 'Roboto', sans-serif;
+            background:
+                radial-gradient(720px 420px at 8% 0%, var(--wash-1), transparent 65%),
+                radial-gradient(680px 460px at 98% 4%, var(--wash-2), transparent 60%),
+                radial-gradient(600px 500px at 50% 100%, var(--wash-3), transparent 65%),
+                var(--md-sys-color-background);
+            background-attachment: fixed;
+            color: var(--md-sys-color-on-surface);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: background-color 0.35s var(--ease-standard), color 0.35s var(--ease-standard);
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        a { color: inherit; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .m3-card {
+            background: var(--md-sys-color-surface-container-low);
+            border-radius: var(--shape-xl);
+            box-shadow: var(--md-sys-elevation-2);
+            padding: clamp(32px, 6vw, 48px);
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 0.5s var(--ease-emphasized) both;
+        }
+
+        .error-icon-wrap {
+            width: 96px;
+            height: 96px;
+            border-radius: var(--shape-xl);
+            margin: 0 auto 24px;
+            background: var(--md-sys-color-error-container);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-icon-wrap .material-symbols-rounded {
+            font-size: 48px;
+            color: var(--md-sys-color-error);
+        }
+
+        h1 {
+            font-size: 1.625rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        p {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 1rem;
+            margin-bottom: 28px;
+        }
+
+        .m3-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 44px;
+            padding: 0 24px;
+            border: none;
+            border-radius: var(--shape-full);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            background: var(--brand-gradient);
+            color: var(--md-sys-color-on-primary);
+            transition: box-shadow 0.2s var(--ease-standard), transform 0.15s var(--ease-standard), filter 0.2s ease;
+        }
+        [data-theme="dark"] .m3-btn { color: #0D1442; }
+        .m3-btn:hover { filter: brightness(1.08); box-shadow: var(--md-sys-elevation-2); }
+        .m3-btn:active { transform: scale(0.96); }
+        .m3-btn .material-symbols-rounded { font-size: 20px; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="text-center">
-        <i class="fas fa-exclamation-triangle text-yellow-500 text-8xl mb-6"></i>
-        <h1 class="text-4xl font-bold text-gray-800 mb-4">Помилка</h1>
-        <p class="text-xl text-gray-600 mb-8">{{ message }}</p>
-        <a href="{{ url_for('index') }}" class="inline-flex items-center text-blue-500 hover:text-blue-600">
-            <i class="fas fa-arrow-left mr-2"></i>
+<body>
+    <div class="m3-card">
+        <div class="error-icon-wrap">
+            <span class="material-symbols-rounded">error</span>
+        </div>
+        <h1>Помилка</h1>
+        <p>{{ message }}</p>
+        <a href="{{ url_for('index') }}" class="m3-btn">
+            <span class="material-symbols-rounded">arrow_back</span>
             Повернутися на головну
         </a>
     </div>
