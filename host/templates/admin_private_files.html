@@ -1,421 +1,278 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приватні файли - ZJH</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        .password-field {
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-        }
-        
-        /* Progress Bar Styles */
-        .upload-progress-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            min-width: 400px;
-        }
-        .upload-progress-modal.active {
-            display: block;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 999px;
-            overflow: hidden;
-            position: relative;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 999px;
-        }
-        .progress-bar-fill.pulse {
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-    </style>
-</head>
-<body class="gradient-bg min-h-screen">
-    <!-- Header -->
-    <div class="glass-effect sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <i class="fas fa-lock text-2xl text-white"></i>
-                    <h1 class="text-2xl font-bold text-white">Приватні файли</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="{{ url_for('admin') }}" 
-                       class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300">
-                        <i class="fas fa-arrow-left mr-2"></i>Назад
-                    </a>
-                    <a href="{{ url_for('logout') }}" 
-                       class="px-4 py-2 bg-red-500/20 text-white rounded-lg hover:bg-red-500/40 transition-all duration-300">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Вийти
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+{% extends "base.html" %}
 
-    <div class="container mx-auto px-4 py-8">
-        <!-- Upload Section -->
-        <div class="glass-effect rounded-xl p-6 mb-8">
-            <h2 class="text-xl font-bold text-white mb-6 flex items-center">
-                <i class="fas fa-upload mr-3"></i>Завантажити приватний файл
-            </h2>
-            
-            <form method="POST" action="{{ url_for('upload_private_file') }}" enctype="multipart/form-data" id="privateUploadForm">
-                <div class="space-y-4">
-                    <div class="bg-white/10 border-2 border-dashed border-white/30 rounded-xl p-8 text-center">
-                        <i class="fas fa-shield-alt text-6xl text-white/60 mb-4"></i>
-                        <p class="text-white mb-4">
-                            Приватні файли захищені паролем та доступні тільки за прямим посиланням
-                        </p>
-                        <input type="file" name="file" required class="hidden" id="privateFileInput">
-                        <button type="button" onclick="document.getElementById('privateFileInput').click()" 
-                                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300">
-                            <i class="fas fa-folder-open mr-2"></i>Обрати файл
-                        </button>
-                        <p class="text-white/50 text-sm mt-4" id="selectedFileName"></p>
-                    </div>
-                    
-                    <button type="submit" 
-                            class="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 font-semibold">
-                        <i class="fas fa-lock mr-2"></i>Завантажити приватно
+{% block page_title %}Приватні файли{% endblock %}
+
+{% block nav_actions %}
+{% if session.get('logged_in') %}
+<a href="{{ url_for('admin') }}" class="m3-btn m3-btn-tonal" title="Адміністрування">
+    <span class="material-symbols-rounded">dashboard</span>
+    <span>Адміністрування</span>
+</a>
+<a href="{{ url_for('admin_modules') }}" class="m3-btn m3-btn-tonal" title="Модулі">
+    <span class="material-symbols-rounded">extension</span>
+    <span>Модулі</span>
+</a>
+<a href="{{ url_for('logout') }}" class="m3-btn m3-btn-error" title="Вийти">
+    <span class="material-symbols-rounded">logout</span>
+    <span>Вийти</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <div style="width:52px;height:52px;border-radius:var(--shape-blob);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-rounded" style="font-size:26px;font-variation-settings:'FILL' 1;">lock</span>
+    </div>
+    <div>
+        <h2 style="font-size:1.5rem;font-weight:700;">Приватні файли</h2>
+        <p style="color:var(--md-sys-color-on-surface-variant);font-size:0.875rem;">Захищені паролем файли з прямим доступом</p>
+    </div>
+</div>
+
+<div class="m3-card" style="padding:24px;margin-bottom:32px;animation:fadeInUp 0.4s var(--ease-emphasized) both;">
+    <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-rounded" style="color:var(--md-sys-color-primary);">upload</span>
+        Завантажити приватний файл
+    </h3>
+
+    <form method="POST" action="{{ url_for('upload_private_file') }}" enctype="multipart/form-data" id="privateUploadForm">
+        <div style="margin-bottom:20px;">
+            <div class="upload-area" onclick="document.getElementById('privateFileInput').click()">
+                <span class="material-symbols-rounded big-icon">shield</span>
+                <div class="upload-title">Оберіть файл або перетягніть його сюди</div>
+                <div class="upload-sub">Приватні файли захищені паролем та доступні тільки за прямим посиланням</div>
+                <input type="file" name="file" required id="privateFileInput" style="display:none;">
+            </div>
+            <p style="color:var(--md-sys-color-on-surface-variant);font-size:0.8125rem;margin-top:10px;" id="selectedFileName"></p>
+        </div>
+
+        <button type="submit" class="m3-btn m3-btn-filled" style="width:100%;height:48px;font-size:1rem;">
+            <span class="material-symbols-rounded">lock</span>
+            Завантажити приватно
+        </button>
+    </form>
+</div>
+
+{% if files %}
+<div style="display:flex;flex-direction:column;gap:16px;">
+    {% for file in files %}
+    <div class="private-item">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;">
+            <div style="flex:1;min-width:220px;">
+                <h3 style="font-size:1.0625rem;font-weight:700;margin-bottom:10px;word-break:break-word;display:flex;align-items:center;gap:8px;">
+                    <span class="material-symbols-rounded" style="color:var(--md-sys-color-tertiary);">description</span>
+                    {{ file.name }}
+                </h3>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                    <span class="m3-chip">{{ file.type.upper() }}</span>
+                    <span class="mono-code">{{ file.size }}</span>
+                    <span class="mono-code">{{ file.date }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);">
+                    <span class="material-symbols-rounded" style="font-size:16px;">link</span>
+                    <code class="mono-code" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ file.url }}</code>
+                    <button class="m3-icon-btn" onclick='copyText({{ file.url | tojson }})' title="Копіювати" style="width:32px;height:32px;">
+                        <span class="material-symbols-rounded" style="font-size:16px;">content_copy</span>
                     </button>
                 </div>
-            </form>
-        </div>
+            </div>
 
-        <!-- Files List -->
-        {% if files %}
-        <div class="space-y-4">
-            {% for file in files %}
-            <div class="glass-effect rounded-xl p-6 card-hover">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex-1">
-                        <h3 class="text-lg font-bold text-white mb-2">
-                            <i class="fas fa-file-{{ file.type }} mr-2"></i>{{ file.name }}
-                        </h3>
-                        <div class="text-sm text-white/70 space-y-1">
-                            <p><i class="fas fa-calendar mr-2"></i>{{ file.date }}</p>
-                            <p><i class="fas fa-weight-hanging mr-2"></i>{{ file.size }}</p>
-                            <p class="flex items-center">
-                                <i class="fas fa-link mr-2"></i>
-                                <code class="bg-white/10 px-2 py-1 rounded text-xs">{{ file.url }}</code>
-                                <button onclick='copyText({{ file.url | tojson }})' class="ml-2 text-blue-300 hover:text-blue-100">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-col space-y-2">
-                        <div class="bg-white/10 rounded-lg p-3">
-                            <p class="text-white/60 text-xs mb-1">Пароль:</p>
-                            <div class="flex items-center space-x-2">
-                                <code class="password-field text-white font-bold text-lg" id="password-{{ file.id }}">{{ file.password }}</code>
-                                <button onclick='copyText({{ file.password | tojson }})' 
-                                        class="px-2 py-1 bg-blue-500/20 text-blue-200 rounded hover:bg-blue-500/40 transition-all">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="flex space-x-2">
-                            <button onclick="resetPassword('{{ file.id }}')" 
-                                    class="flex-1 px-4 py-2 bg-yellow-500/20 text-yellow-200 rounded-lg hover:bg-yellow-500/40 transition-all text-sm">
-                                <i class="fas fa-sync-alt mr-1"></i>Скинути
-                            </button>
-                            <button onclick="deletePrivateFile('{{ file.id }}')" 
-                                    class="flex-1 px-4 py-2 bg-red-500/20 text-red-200 rounded-lg hover:bg-red-500/40 transition-all text-sm">
-                                <i class="fas fa-trash mr-1"></i>Видалити
-                            </button>
-                        </div>
-                        
-                        <button onclick='copyText({{ file.url | tojson }})'
-                                class="px-4 py-2 bg-purple-500/20 text-purple-200 rounded-lg hover:bg-purple-500/40 transition-all text-sm">
-                            <i class="fas fa-link mr-1"></i>Копіювати повне посилання
+            <div style="display:flex;flex-direction:column;gap:8px;min-width:200px;">
+                <div style="background:var(--md-sys-color-surface-container);border-radius:var(--shape-md);padding:12px;">
+                    <p style="font-size:0.75rem;color:var(--md-sys-color-on-surface-variant);margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+                        <span class="material-symbols-rounded" style="font-size:14px;">key</span>
+                        Пароль:
+                    </p>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <code class="private-password" id="password-{{ file.id }}">{{ file.password }}</code>
+                        <button class="m3-icon-btn filled-tonal" onclick='copyText({{ file.password | tojson }})' title="Копіювати пароль" style="width:32px;height:32px;">
+                            <span class="material-symbols-rounded" style="font-size:16px;">content_copy</span>
                         </button>
                     </div>
                 </div>
+
+                <div style="display:flex;gap:8px;">
+                    <button onclick="resetPassword('{{ file.id }}')" class="m3-btn m3-btn-tonal" style="flex:1;height:38px;font-size:0.8125rem;padding:0 12px;">
+                        <span class="material-symbols-rounded">sync</span>
+                        Скинути
+                    </button>
+                    <button onclick="deletePrivateFile('{{ file.id }}')" class="m3-btn m3-btn-error" style="flex:1;height:38px;font-size:0.8125rem;padding:0 12px;">
+                        <span class="material-symbols-rounded">delete</span>
+                        Видалити
+                    </button>
+                </div>
+
+                <button onclick='copyText({{ file.url | tojson }})' class="m3-btn m3-btn-outlined" style="height:38px;font-size:0.8125rem;">
+                    <span class="material-symbols-rounded">link</span>
+                    Копіювати повне посилання
+                </button>
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="glass-effect rounded-2xl p-12 text-center">
-            <i class="fas fa-lock text-6xl text-white/60 mb-6"></i>
-            <h3 class="text-2xl font-bold text-white mb-4">Немає приватних файлів</h3>
-            <p class="text-white/70">Завантажте перший приватний файл</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Upload Progress Modal -->
-    <div class="upload-progress-modal" id="uploadProgressModal">
-        <div class="text-center mb-4">
-            <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
-            <h3 class="text-xl font-bold text-gray-800">Завантаження файлу...</h3>
-        </div>
-        <div class="progress-bar mb-4">
-            <div class="progress-bar-fill" id="progressBarFill"></div>
-        </div>
-        <div class="flex justify-between text-sm text-gray-600 mb-2">
-            <span id="progressPercent">0%</span>
-            <span id="progressSpeed">0 MB/s</span>
-        </div>
-        <div class="text-center text-sm text-gray-600">
-            <span id="progressStatus">Підготовка...</span>
         </div>
     </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" 
-         class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50" style="display:none;">
-        <i class="fas fa-check mr-2"></i>
-        <span id="toastMessage">Скопійовано!</span>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state-wrap">
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <span class="material-symbols-rounded">lock_open</span>
+        </div>
+        <h3>Немає приватних файлів</h3>
+        <p>Завантажте перший приватний файл</p>
     </div>
+</div>
+{% endif %}
 
-    <script>
-        // Show selected filename
-        document.getElementById('privateFileInput').addEventListener('change', function(e) {
-            const filename = e.target.files[0]?.name || '';
-            document.getElementById('selectedFileName').textContent = filename ? `Обрано: ${filename}` : '';
+ <div style="margin-bottom:20px;padding:16px 20px;background:var(--md-sys-color-secondary-container);border-radius:var(--shape-md);display:flex;align-items:center;gap:12px;animation:fadeInUp 0.3s var(--ease-standard) both;">
+    <span class="material-symbols-rounded" style="color:var(--md-sys-color-on-secondary-container);font-size:22px;">analytics</span>
+    <span style="color:var(--md-sys-color-on-secondary-container);font-size:0.875rem;">Переглянути детальну статистику сховища</span>
+    <a href="{{ url_for('admin_stats') }}" class="m3-btn m3-btn-filled" style="margin-left:auto;height:36px;font-size:0.8125rem;padding:0 14px;">
+        <span class="material-symbols-rounded" style="font-size:18px;">bar_chart</span>
+        Статистика
+    </a>
+</div>
+
+<div class="upload-progress-modal" id="uploadProgressModal"> 
+    <div style="text-align:center;margin-bottom:16px;">
+        <span class="material-symbols-rounded" style="font-size:40px;color:var(--md-sys-color-primary);">cloud_upload</span>
+        <h3 style="font-size:1.125rem;font-weight:700;margin-top:8px;">Завантаження файлу...</h3>
+    </div>
+    <div class="progress-track" style="margin-bottom:12px;">
+        <div class="progress-fill" id="progressBarFill"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);margin-bottom:8px;">
+        <span id="progressPercent">0%</span>
+        <span id="progressSpeed">0 MB/s</span>
+    </div>
+    <div style="text-align:center;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);">
+        <span id="progressStatus">Підготовка...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('privateFileInput').addEventListener('change', function(e) {
+        const filename = e.target.files[0]?.name || '';
+        document.getElementById('selectedFileName').textContent = filename ? `Обрано: ${filename}` : '';
+    });
+
+    const privateUploadForm = document.getElementById('privateUploadForm');
+    privateUploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const fileInput = document.getElementById('privateFileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            showToast('Оберіть файл', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const progressModal = document.getElementById('uploadProgressModal');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressSpeed = document.getElementById('progressSpeed');
+        const progressStatus = document.getElementById('progressStatus');
+
+        progressModal.classList.add('active');
+        progressStatus.textContent = 'Завантаження...';
+
+        const xhr = new XMLHttpRequest();
+        let startTime = Date.now();
+        let startLoaded = 0;
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBarFill.style.width = percentComplete + '%';
+                progressPercent.textContent = Math.round(percentComplete) + '%';
+
+                const currentTime = Date.now();
+                const timeElapsed = (currentTime - startTime) / 1000;
+                const bytesUploaded = e.loaded - startLoaded;
+                if (timeElapsed > 0) {
+                    const speed = bytesUploaded / timeElapsed / (1024 * 1024);
+                    progressSpeed.textContent = speed.toFixed(2) + ' MB/s';
+                }
+
+                progressBarFill.classList.toggle('pulse', percentComplete < 100);
+                startTime = currentTime;
+                startLoaded = e.loaded;
+            }
         });
 
-        // Private file upload with progress
-        const privateUploadForm = document.getElementById('privateUploadForm');
-        privateUploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const fileInput = document.getElementById('privateFileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showToast('Оберіть файл', 'error');
-                return;
-            }
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    progressBarFill.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    progressStatus.textContent = 'Завершено!';
+                    progressBarFill.classList.remove('pulse');
 
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const progressModal = document.getElementById('uploadProgressModal');
-            const progressBarFill = document.getElementById('progressBarFill');
-            const progressPercent = document.getElementById('progressPercent');
-            const progressSpeed = document.getElementById('progressSpeed');
-            const progressStatus = document.getElementById('progressStatus');
-
-            progressModal.classList.add('active');
-            progressStatus.textContent = 'Завантаження...';
-
-            const xhr = new XMLHttpRequest();
-            let startTime = Date.now();
-            let startLoaded = 0;
-
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressBarFill.style.width = percentComplete + '%';
-                    progressPercent.textContent = Math.round(percentComplete) + '%';
-                    
-                    // Calculate speed
-                    const currentTime = Date.now();
-                    const timeElapsed = (currentTime - startTime) / 1000;
-                    const bytesUploaded = e.loaded - startLoaded;
-                    if (timeElapsed > 0) {
-                        const speed = bytesUploaded / timeElapsed / (1024 * 1024);
-                        progressSpeed.textContent = speed.toFixed(2) + ' MB/s';
-                    }
-                    
-                    if (percentComplete < 100) {
-                        progressBarFill.classList.add('pulse');
-                    } else {
-                        progressBarFill.classList.remove('pulse');
-                    }
-                    
-                    startTime = currentTime;
-                    startLoaded = e.loaded;
-                }
-            });
-
-            xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        progressBarFill.style.width = '100%';
-                        progressPercent.textContent = '100%';
-                        progressStatus.textContent = 'Завершено!';
-                        progressBarFill.classList.remove('pulse');
-                        
-                        setTimeout(() => {
-                            progressModal.classList.remove('active');
-                            showToast(`Файл завантажено! Пароль: ${data.password}`, 'success');
-                            setTimeout(() => {
-                                location.reload();
-                            }, 2000);
-                        }, 1000);
-                    } catch (e) {
+                    setTimeout(() => {
                         progressModal.classList.remove('active');
-                        showToast('Помилка завантаження', 'error');
-                    }
-                } else {
+                        showToast(`Файл завантажено! Пароль: ${data.password}`, 'success');
+                        setTimeout(() => location.reload(), 2000);
+                    }, 1000);
+                } catch (e) {
                     progressModal.classList.remove('active');
                     showToast('Помилка завантаження', 'error');
                 }
-            });
-
-            xhr.addEventListener('error', function() {
+            } else {
                 progressModal.classList.remove('active');
-                showToast('Помилка з\'єднання', 'error');
-            });
-
-            xhr.addEventListener('abort', function() {
-                progressModal.classList.remove('active');
-                showToast('Завантаження скасовано', 'error');
-            });
-
-            xhr.open('POST', '/admin/upload_private', true);
-            xhr.send(formData);
+                showToast('Помилка завантаження', 'error');
+            }
         });
 
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            toastMessage.textContent = message;
-            toast.style.display = 'block';
-            toast.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50`;
-            toast.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 300);
-            }, 3000);
-        }
+        xhr.addEventListener('error', function() {
+            progressModal.classList.remove('active');
+            showToast('Помилка з\'єднання', 'error');
+        });
 
-        function copyText(text) {
-            if (!text) {
-                showToast('Немає тексту для копіювання', 'error');
-                return;
-            }
+        xhr.open('POST', '/admin/upload_private', true);
+        xhr.send(formData);
+    });
 
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast('Скопійовано!');
-                }).catch(() => {
-                    fallbackCopyTextToClipboard(text, 'Скопійовано!');
-                });
+    async function resetPassword(fileId) {
+        if (!confirm('Ви впевнені що хочете скинути пароль? Старе посилання перестане працювати.')) return;
+
+        try {
+            const response = await fetch(`/admin/private/${fileId}/reset_password`, { method: 'POST' });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById(`password-${fileId}`).textContent = data.password;
+                showToast('Пароль успішно скинуто!');
             } else {
-                fallbackCopyTextToClipboard(text, 'Скопійовано!');
+                showToast(data.message || 'Помилка', 'error');
             }
+        } catch (error) {
+            showToast('Помилка з\'єднання', 'error');
         }
+    }
 
-        function fallbackCopyTextToClipboard(text, successMessage = 'Скопійовано!') {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+    async function deletePrivateFile(fileId) {
+        if (!confirm('Ви впевнені що хочете видалити цей файл?')) return;
 
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast(successMessage);
-                } else {
-                    showToast('Помилка копіювання', 'error');
-                }
-            } catch (err) {
-                console.error('Fallback copy error:', err);
-                showToast('Помилка копіювання', 'error');
+        try {
+            const response = await fetch(`/admin/private/${fileId}/delete`, { method: 'POST' });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Файл видалено!');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.message || 'Помилка', 'error');
             }
-
-            document.body.removeChild(textArea);
+        } catch (error) {
+            showToast('Помилка з\'єднання', 'error');
         }
-
-        async function resetPassword(fileId) {
-            if (!confirm('Ви впевнені що хочете скинути пароль? Старе посилання перестане працювати.')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/admin/private/${fileId}/reset_password`, {
-                    method: 'POST'
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById(`password-${fileId}`).textContent = data.password;
-                    showToast('Пароль успішно скинуто!');
-                } else {
-                    showToast(data.message || 'Помилка', 'error');
-                }
-            } catch (error) {
-                showToast('Помилка з\'єднання', 'error');
-            }
-        }
-
-        async function deletePrivateFile(fileId) {
-            if (!confirm('Ви впевнені що хочете видалити цей файл?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/admin/private/${fileId}/delete`, {
-                    method: 'POST'
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Файл видалено!');
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showToast(data.message || 'Помилка', 'error');
-                }
-            } catch (error) {
-                showToast('Помилка з\'єднання', 'error');
-            }
-        }
-    </script>
-</body>
-</html>
+    }
+</script>
+{% endblock %}

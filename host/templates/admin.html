@@ -1,1155 +1,777 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Адміністрування ZJH - Файлове сховище</title>
-    <link rel="icon" href="{{ url_for('photo', filename='oblachko.svg') }}" />
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        
-        /* Progress Bar Styles */
-        .upload-progress {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            min-width: 400px;
-        }
-        .upload-progress.active {
-            display: block;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 999px;
-            overflow: hidden;
-            position: relative;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 999px;
-        }
-        .progress-bar-fill.pulse {
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        /* Drag & Drop Zone */
-        .upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .upload-area:hover,
-        .upload-area.dragover {
-            border-color: rgba(102, 126, 234, 0.8);
-            background: rgba(102, 126, 234, 0.1);
-            transform: scale(1.02);
-        }
-        .upload-area.dragover::before {
-            content: '📁 Відпустіть файл тут';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        
-        /* Stats Cards Animation */
-        .stat-card {
-            animation: fadeInUp 0.5s ease-out;
-        }
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* QR Code Button */
-        .qr-button {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .file-card:hover .qr-button {
-            opacity: 1;
-        }
-        
-        /* Context Menu */
-        .context-menu {
-            position: fixed;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            padding: 0.5rem 0;
-            z-index: 1000;
-            display: none;
-        }
-        .context-menu.active {
-            display: block;
-        }
-        .context-menu-item {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .context-menu-item:hover {
-            background: #f3f4f6;
-        }
-    </style>
-</head>
-<body class="gradient-bg min-h-screen">
-    <!-- Header -->
-    <div class="glass-effect sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <i class="fas fa-shield-alt text-2xl text-white"></i>
-                    <h1 class="text-2xl font-bold text-white">Панель адміністратора</h1>
+{% extends "base.html" %}
+
+{% block page_title %}Адміністрування{% endblock %}
+
+{% block nav_actions %}
+{% if session.get('logged_in') %}
+<a href="{{ url_for('admin_stats') }}" class="m3-btn m3-btn-tonal" title="Статистика">
+    <span class="material-symbols-rounded">analytics</span>
+    <span>Статистика</span>
+</a>
+<a href="{{ url_for('admin_private_files') }}" class="m3-btn m3-btn-tonal" title="Приватні файли">
+    <span class="material-symbols-rounded">lock</span>
+    <span>Приватні</span>
+</a>
+<a href="{{ url_for('admin_modules') }}" class="m3-btn m3-btn-tonal" title="Модулі">
+    <span class="material-symbols-rounded">extension</span>
+    <span>Модулі</span>
+</a>
+<a href="{{ url_for('index') }}" class="m3-btn m3-btn-tonal" title="На головну">
+    <span class="material-symbols-rounded">home</span>
+    <span>На головну</span>
+</a>
+<a href="{{ url_for('logout') }}" class="m3-btn m3-btn-error" title="Вийти">
+    <span class="material-symbols-rounded">logout</span>
+    <span>Вийти</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <div style="width:52px;height:52px;border-radius:var(--shape-blob);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-rounded" style="font-size:26px;font-variation-settings:'FILL' 1;">dashboard</span>
+    </div>
+    <div>
+        <h2 style="font-size:1.5rem;font-weight:700;">Панель адміністратора</h2>
+        <p style="color:var(--md-sys-color-on-surface-variant);font-size:0.875rem;">Керування файловим сховищем</p>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div style="margin-bottom:20px;display:flex;flex-direction:column;gap:8px;">
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <span class="material-symbols-rounded">{{ 'check_circle' if category == 'success' else 'error' if category == 'error' else 'info' }}</span>
+                    {{ message }}
                 </div>
-                <div class="flex items-center space-x-3">
-                    <a href="{{ url_for('admin_modules') }}" 
-                       class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg">
-                        <i class="fas fa-puzzle-piece text-white text-xl mr-2"></i>Модулі
-                    </a>
-                    <a href="{{ url_for('admin_private_files') }}" 
-                       class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-lg">
-                        <i class="fas fa-lock mr-2"></i>Приватні файли
-                    </a>
-                    <a href="{{ url_for('index') }}" 
-                       class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300">
-                        <i class="fas fa-home mr-2"></i>На головну
-                    </a>
-                    <a href="{{ url_for('logout') }}" 
-                       class="px-4 py-2 bg-red-500/20 text-white rounded-lg hover:bg-red-500/40 transition-all duration-300">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Вийти
-                    </a>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+    {% endif %}
+{% endwith %}
+
+{% if stats %}
+<div class="stat-grid">
+    <div class="stat-card" style="animation-delay:0s;">
+        <div class="stat-icon">
+            <span class="material-symbols-rounded">folder</span>
+        </div>
+        <div class="stat-number">{{ stats.total_files }}</div>
+        <div class="stat-label">Всього файлів</div>
     </div>
 
-    <div class="container mx-auto px-4 py-8">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="mb-6 space-y-2">
-                    {% for category, message in messages %}
-                        <div class="glass-effect p-4 rounded-lg text-white animate-fade-in
-                            {% if category == 'success' %}border-l-4 border-green-400{% endif %}
-                            {% if category == 'error' %}border-l-4 border-red-400{% endif %}
-                            {% if category == 'info' %}border-l-4 border-blue-400{% endif %}">
-                            <i class="fas fa-info-circle mr-2"></i>{{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <!-- Stats Dashboard -->
-        {% if stats %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="glass-effect rounded-xl p-6 text-center stat-card">
-                <div class="w-12 h-12 bg-blue-500 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                    <i class="fas fa-file text-white text-xl"></i>
-                </div>
-                <div class="text-2xl font-bold text-white">{{ stats.total_files }}</div>
-                <div class="text-white/70 text-sm">Всього файлів</div>
-            </div>
-            
-            <div class="glass-effect rounded-xl p-6 text-center stat-card" style="animation-delay: 0.1s;">
-                <div class="w-12 h-12 bg-green-500 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                    <i class="fas fa-database text-white text-xl"></i>
-                </div>
-                <div class="text-2xl font-bold text-white">{{ stats.formatted_size }}</div>
-                <div class="text-white/70 text-sm">Загальний розмір</div>
-            </div>
-            
-            <div class="glass-effect rounded-xl p-6 text-center stat-card" style="animation-delay: 0.2s;">
-                <div class="w-12 h-12 bg-purple-500 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                    <i class="fas fa-download text-white text-xl"></i>
-                </div>
-                <div class="text-2xl font-bold text-white">{{ stats.total_downloads }}</div>
-                <div class="text-white/70 text-sm">Завантажень</div>
-            </div>
-            
-            <div class="glass-effect rounded-xl p-6 text-center stat-card" style="animation-delay: 0.3s;">
-                <div class="w-12 h-12 bg-orange-500 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                    <i class="fas fa-layer-group text-white text-xl"></i>
-                </div>
-                <div class="text-2xl font-bold text-white">{{ stats.file_types|length }}</div>
-                <div class="text-white/70 text-sm">Типів файлів</div>
-            </div>
+    <div class="stat-card" style="animation-delay:0.06s;">
+        <div class="stat-icon teal">
+            <span class="material-symbols-rounded">database</span>
         </div>
-        
-        <!-- Disk Usage -->
-        {% if stats.disk_usage %}
-        <div class="glass-effect rounded-xl p-6 mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-white flex items-center">
-                    <i class="fas fa-hard-drive mr-2"></i>Використання диску
-                </h3>
-                <span class="text-white/70">{{ "%.1f"|format(stats.disk_usage.percent) }}%</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-bar-fill" style="width: {{ stats.disk_usage.percent }}%"></div>
-            </div>
-            <div class="flex justify-between mt-2 text-white/70 text-sm">
-                <span>{{ (stats.disk_usage.used / (1024**3))|round(2) }} GB використано</span>
-                <span>{{ (stats.disk_usage.free / (1024**3))|round(2) }} GB вільно</span>
-            </div>
+        <div class="stat-number" style="font-size:1.4rem;">{{ stats.formatted_size }}</div>
+        <div class="stat-label">Загальний розмір</div>
+    </div>
+
+    <div class="stat-card" style="animation-delay:0.12s;">
+        <div class="stat-icon cyan">
+            <span class="material-symbols-rounded">download</span>
         </div>
-        {% endif %}
-        {% endif %}
+        <div class="stat-number">{{ stats.total_downloads }}</div>
+        <div class="stat-label">Завантажень</div>
+    </div>
 
-        <!-- Upload Section with Drag & Drop -->
-        <div class="glass-effect rounded-xl p-6 mb-8">
-            <h2 class="text-xl font-bold text-white mb-6 flex items-center">
-                <i class="fas fa-upload mr-3"></i>Завантаження файлів
-            </h2>
-            
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- File Upload with Drag & Drop -->
-                <div>
-                    <h3 class="text-lg font-semibold text-white mb-4">Завантажити з комп'ютера</h3>
-                    <form id="uploadForm" enctype="multipart/form-data">
-                        <div class="upload-area rounded-xl p-8 text-center mb-4 relative" id="dropZone">
-                            <i class="fas fa-cloud-upload-alt text-5xl text-white/60 mb-3"></i>
-                            <div class="text-white mb-2 font-semibold">Перетягніть файл сюди</div>
-                            <div class="text-white/60 text-sm mb-4">або</div>
-                            <input type="file" name="file" id="fileInput" class="hidden" multiple>
-                            <button type="button" onclick="document.getElementById('fileInput').click()" 
-                                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300">
-                                Обрати файли
-                            </button>
-                            <div class="text-white/60 text-sm mt-4">Максимальний розмір: 500 МБ</div>
-                        </div>
-                        <div id="fileList" class="mb-4 space-y-2"></div>
-                        <button type="submit" id="uploadBtn"
-                                class="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 font-semibold">
-                            <i class="fas fa-upload mr-2"></i>Завантажити
-                        </button>
-                    </form>
-                </div>
+    <div class="stat-card" style="animation-delay:0.18s;">
+        <div class="stat-icon amber">
+            <span class="material-symbols-rounded">category</span>
+        </div>
+        <div class="stat-number">{{ stats.file_types|length }}</div>
+        <div class="stat-label">Типів файлів</div>
+    </div>
+</div>
 
-                <!-- URL Upload -->
-                <div>
-                    <h3 class="text-lg font-semibold text-white mb-4">Завантажити за URL</h3>
-                    <form id="urlUploadForm" class="space-y-4">
-                        <div>
-                            <input type="url" 
-                                   id="urlInput"
-                                   name="url" 
-                                   placeholder="https://example.com/file.pdf" 
-                                   required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-black placeholder-white/50 focus:outline-none focus:border-white/40">
-                        </div>
-                        <div>
-                            <input type="text" 
-                                   id="filenameInput"
-                                   name="filename" 
-                                   placeholder="Ім'я файлу (опціонально)"
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-black placeholder-white/50 focus:outline-none focus:border-white/40">
-                        </div>
-                        <button type="submit" 
-                                class="w-full py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 font-semibold">
-                            <i class="fas fa-download mr-2"></i>Завантажити за URL
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Private File Upload -->
-            <div class="mt-6 pt-6 border-t border-white/20">
-                <h3 class="text-lg font-semibold text-white mb-4">
-                    <i class="fas fa-lock mr-2"></i>Завантажити приватний файл
-                </h3>
-                <form id="privateUploadForm" enctype="multipart/form-data">
-                    <div class="flex gap-4">
-                        <input type="file" id="privateFileInput" class="hidden">
-                        <button type="button" onclick="document.getElementById('privateFileInput').click()"
-                                class="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300">
-                            <i class="fas fa-folder-open mr-2"></i>Обрати файл
-                        </button>
-                        <button type="submit" 
-                                class="flex-1 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300">
-                            <i class="fas fa-shield-alt mr-2"></i>Завантажити приватно
-                        </button>
+{% if stats.disk_usage %}
+<div class="m3-card" style="padding:20px;margin-bottom:32px;animation:fadeInUp 0.5s var(--ease-emphasized) both;animation-delay:0.24s;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="font-size:0.9375rem;font-weight:700;display:flex;align-items:center;gap:8px;">
+            <span class="material-symbols-rounded" style="font-size:20px;color:var(--md-sys-color-primary);">hard_drive</span>
+            Використання диску
+        </h3>
+        <span style="font-size:0.875rem;color:var(--md-sys-color-on-surface-variant);">{{ "%.1f"|format(stats.disk_usage.percent) }}%</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" style="width: {{ stats.disk_usage.percent }}%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);">
+        <span>{{ (stats.disk_usage.used / (1024**3))|round(2) }} GB використано</span>
+        <span>{{ (stats.disk_usage.free / (1024**3))|round(2) }} GB вільно</span>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="m3-card" style="padding:24px;margin-bottom:32px;animation:fadeInUp 0.5s var(--ease-emphasized) both;animation-delay:0.3s;">
+    <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-rounded" style="color:var(--md-sys-color-primary);">upload</span>
+        Завантаження файлів
+    </h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+        <div>
+            <h4 style="font-size:0.9375rem;font-weight:600;margin-bottom:12px;color:var(--md-sys-color-on-surface-variant);">З комп'ютера</h4>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <span class="material-symbols-rounded big-icon">cloud_upload</span>
+                    <div style="margin-bottom:12px;">
+                        <div class="upload-title">Перетягніть файл сюди</div>
+                        <div style="font-size:0.8125rem;margin-top:4px;">або натисніть щоб обрати</div>
                     </div>
-                    <p class="text-white/60 text-sm mt-2" id="privateFileName"></p>
-                </form>
-            </div>
-        </div>
-
-        <!-- Upload Progress Modal -->
-        <div class="upload-progress" id="uploadProgress">
-            <div class="text-center mb-4">
-                <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
-                <h3 class="text-xl font-bold text-gray-800">Завантаження файлу...</h3>
-            </div>
-            <div class="progress-bar mb-4">
-                <div class="progress-bar-fill" id="progressBarFill"></div>
-            </div>
-            <div class="flex justify-between text-sm text-gray-600 mb-2">
-                <span id="progressPercent">0%</span>
-                <span id="progressSpeed">0 MB/s</span>
-            </div>
-            <div class="text-center text-sm text-gray-600">
-                <span id="progressStatus">Підготовка...</span>
-            </div>
-        </div>
-
-        <!-- Search and Filters -->
-        <div class="glass-effect rounded-xl p-6 mb-8">
-            <form method="GET" class="space-y-4">
-                <div class="flex flex-wrap gap-4">
-                    <div class="flex-1 min-w-64">
-                        <input type="text" 
-                               name="search" 
-                               value="{{ search_query }}" 
-                               placeholder="🔍 Пошук файлів..." 
-                               class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40">
-                    </div>
-                    
-                    <select name="type" class="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none">
-                        <option value="">Всі типи</option>
-                        {% for type in file_types %}
-                        <option value="{{ type }}" {% if type == file_type %}selected{% endif %}>{{ type.upper() }}</option>
-                        {% endfor %}
-                    </select>
-                    
-                    <select name="sort" class="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none">
-                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>За датою</option>
-                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>За іменем</option>
-                        <option value="size" {% if sort_by == 'size' %}selected{% endif %}>За розміром</option>
-                        <option value="type" {% if sort_by == 'type' %}selected{% endif %}>За типом</option>
-                    </select>
-                    
-                    <select name="order" class="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none">
-                        <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>↓ Спадання</option>
-                        <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>↑ Зростання</option>
-                    </select>
-                    
-                    <button type="submit" 
-                            class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300">
-                        <i class="fas fa-search mr-2"></i>Знайти
+                    <input type="file" name="file" id="fileInput" style="display:none;" multiple>
+                    <button type="button" onclick="event.stopPropagation();document.getElementById('fileInput').click()" class="m3-btn m3-btn-tonal">
+                        <span class="material-symbols-rounded">folder_open</span>
+                        Обрати файли
                     </button>
-                    
-                    <!-- Bulk Select Button -->
-                    <button type="button" onclick="toggleBulkSelect()" id="bulkSelectBtn"
-                            class="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300">
-                        <i class="fas fa-check-square mr-2"></i>Вибрати
-                    </button>
+                    <div class="upload-sub" style="margin-top:12px;">Максимальний розмір: 500 МБ</div>
                 </div>
+                <div id="fileList" style="margin:12px 0;display:flex;flex-direction:column;gap:8px;"></div>
+                <button type="submit" id="uploadBtn" class="m3-btn m3-btn-filled" style="width:100%;height:46px;">
+                    <span class="material-symbols-rounded">upload</span>
+                    Завантажити
+                </button>
             </form>
         </div>
 
-        <!-- Files Grid -->
-        {% if files %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8" id="filesGrid">
-            {% for file in files %}
-            <div class="glass-effect rounded-xl p-6 card-hover file-card relative" data-filename="{{ file.original_name }}">
-                <!-- Checkbox for bulk selection -->
-                <input type="checkbox" 
-                       class="file-checkbox hidden absolute top-3 left-3 w-5 h-5 cursor-pointer z-10" 
-                       data-filename="{{ file.original_name }}">
-                
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ file.color.replace('text-', 'from-').replace('-500', '-400') }} to-{{ file.color.split('-')[1] }}-600 flex items-center justify-center mr-3 flex-shrink-0">
-                            <i class="fas {{ file.icon }} text-white"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-semibold text-white text-sm line-clamp-2 mb-1" title="{{ file.original_name }}">{{ file.original_name }}</h3>
-                            <span class="text-xs px-2 py-1 bg-white/20 text-white rounded-full">{{ file.type.upper() }}</span>
-                        </div>
-                    </div>
-                    <button onclick="deleteFile('{{ file.original_name }}')" 
-                            class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/20 transition-all duration-300 ml-2">
-                        <i class="fas fa-trash text-sm"></i>
-                    </button>
+        <div>
+            <h4 style="font-size:0.9375rem;font-weight:600;margin-bottom:12px;color:var(--md-sys-color-on-surface-variant);">За посиланням</h4>
+            <form id="urlUploadForm" style="display:flex;flex-direction:column;gap:12px;">
+                <div>
+                    <input type="url"
+                           id="urlInput"
+                           name="url"
+                           placeholder="https://example.com/file.pdf"
+                           required
+                           class="m3-field"
+                           style="height:46px;">
                 </div>
-                
-                <div class="text-xs text-white/70 space-y-1 mb-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-calendar-alt w-4 mr-2"></i>{{ file.upload_date }}
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-weight-hanging w-4 mr-2"></i>{{ file.formatted_size }}
-                    </div>
-                    {% if file.line_count > 0 %}
-                    <div class="flex items-center">
-                        <i class="fas fa-code w-4 mr-2"></i>{{ file.line_count }} рядків
-                    </div>
-                    {% endif %}
-                    {% if file.download_count > 0 %}
-                    <div class="flex items-center">
-                        <i class="fas fa-download w-4 mr-2"></i>{{ file.download_count }} завантажень
-                    </div>
-                    {% endif %}
+                <div>
+                    <input type="text"
+                           id="filenameInput"
+                           name="filename"
+                           placeholder="Ім'я файлу (опціонально)"
+                           class="m3-field"
+                           style="height:46px;">
                 </div>
-                
-                <div class="grid grid-cols-4 gap-2">
-                    <a href="{{ url_for('preview_file', filename=file.original_name) }}" 
-                       class="px-2 py-2 bg-blue-500/20 text-blue-200 rounded text-center hover:bg-blue-500/40 transition-all duration-300 text-xs"
-                       title="Переглянути">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="{{ url_for('download_file', filename=file.original_name) }}" 
-                       class="px-2 py-2 bg-green-500/20 text-green-200 rounded text-center hover:bg-green-500/40 transition-all duration-300 text-xs"
-                       title="Завантажити">
-                        <i class="fas fa-download"></i>
-                    </a>
-                    <button onclick='copyLink({{ url_for('download_file', filename=file.original_name, _external=True) | tojson }})'
-                            class="px-2 py-2 bg-purple-500/20 text-purple-200 rounded hover:bg-purple-500/40 transition-all duration-300 text-xs"
-                            title="Копіювати посилання">
-                        <i class="fas fa-link"></i>
-                    </button>
-                    <button onclick="showQR('{{ file.original_name }}')"
-                            class="px-2 py-2 bg-orange-500/20 text-orange-200 rounded hover:bg-orange-500/40 transition-all duration-300 text-xs qr-button"
-                            title="QR код">
-                        <i class="fas fa-qrcode"></i>
-                    </button>
-                </div>
+                <button type="submit" class="m3-btn m3-btn-tonal" style="width:100%;height:46px;">
+                    <span class="material-symbols-rounded">download</span>
+                    Завантажити за URL
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div style="border-top:1px solid var(--md-sys-color-outline-variant);padding-top:20px;">
+        <h4 style="font-size:0.9375rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span class="material-symbols-rounded" style="font-size:20px;color:var(--md-sys-color-tertiary);">lock</span>
+            Завантажити приватний файл
+        </h4>
+        <form id="privateUploadForm" enctype="multipart/form-data">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <input type="file" id="privateFileInput" style="display:none;">
+                <button type="button" onclick="document.getElementById('privateFileInput').click()" class="m3-btn m3-btn-outlined" style="flex:1;min-width:200px;height:44px;">
+                    <span class="material-symbols-rounded">folder_open</span>
+                    Обрати файл
+                </button>
+                <button type="submit" class="m3-btn m3-btn-filled" style="flex:1;min-width:200px;height:44px;">
+                    <span class="material-symbols-rounded">shield</span>
+                    Завантажити приватно
+                </button>
             </div>
+            <p style="font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);margin-top:8px;" id="privateFileName"></p>
+        </form>
+    </div>
+</div>
+
+<div class="upload-progress-modal" id="uploadProgress">
+    <div style="text-align:center;margin-bottom:16px;">
+        <span class="material-symbols-rounded" style="font-size:40px;color:var(--md-sys-color-primary);">cloud_upload</span>
+        <h3 style="font-size:1.125rem;font-weight:700;margin-top:8px;">Завантаження файлу...</h3>
+    </div>
+    <div class="progress-track" style="margin-bottom:12px;">
+        <div class="progress-fill" id="progressBarFill"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);margin-bottom:8px;">
+        <span id="progressPercent">0%</span>
+        <span id="progressSpeed">0 MB/s</span>
+    </div>
+    <div style="text-align:center;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);">
+        <span id="progressStatus">Підготовка...</span>
+    </div>
+</div>
+
+<div class="m3-card" style="padding:20px;margin-bottom:24px;animation:fadeInUp 0.5s var(--ease-emphasized) both;animation-delay:0.36s;">
+    <form method="GET" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+        <div style="flex:1;min-width:220px;">
+            <input type="text"
+                   name="search"
+                   value="{{ search_query }}"
+                   placeholder="Пошук файлів..."
+                   class="m3-field"
+                   style="height:46px;">
+        </div>
+
+        <select name="type" class="m3-field" style="height:46px;width:150px;">
+            <option value="">Всі типи</option>
+            {% for type in file_types %}
+            <option value="{{ type }}" {% if type == file_type %}selected{% endif %}>{{ type.upper() }}</option>
             {% endfor %}
-        </div>
+        </select>
 
-        <!-- Pagination -->
-        {% if total_pages > 1 %}
-        <div class="flex justify-center">
-            <div class="flex items-center space-x-2 glass-effect rounded-xl p-4">
-                {% if page > 1 %}
-                <a href="?page={{ page - 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" 
-                   class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-                {% endif %}
-                
-                {% for p in range(1, total_pages + 1) %}
-                    {% if p == page %}
-                    <span class="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold">{{ p }}</span>
-                    {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
-                    <a href="?page={{ p }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" 
-                       class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300">{{ p }}</a>
-                    {% elif p == page - 3 or p == page + 3 %}
-                    <span class="px-2 py-2 text-white/70">...</span>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if page < total_pages %}
-                <a href="?page={{ page + 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" 
-                   class="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                {% endif %}
+        <select name="sort" class="m3-field" style="height:46px;width:160px;">
+            <option value="date" {% if sort_by == 'date' %}selected{% endif %}>За датою</option>
+            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>За іменем</option>
+            <option value="size" {% if sort_by == 'size' %}selected{% endif %}>За розміром</option>
+            <option value="type" {% if sort_by == 'type' %}selected{% endif %}>За типом</option>
+        </select>
+
+        <select name="order" class="m3-field" style="height:46px;width:140px;">
+            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Спадання</option>
+            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Зростання</option>
+        </select>
+
+        <button type="submit" class="m3-btn m3-btn-filled" style="height:46px;">
+            <span class="material-symbols-rounded">search</span>
+            Знайти
+        </button>
+
+        <button type="button" onclick="toggleBulkSelect()" id="bulkSelectBtn" class="m3-btn m3-btn-outlined" style="height:46px;">
+            <span class="material-symbols-rounded">checklist</span>
+            Вибрати
+        </button>
+    </form>
+</div>
+
+{% if files %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px;">
+    {% set fa_to_symbol = {
+        'fa-file-pdf': 'picture_as_pdf',
+        'fa-file-word': 'description',
+        'fa-file-excel': 'table_chart',
+        'fa-file-powerpoint': 'slideshow',
+        'fa-file-alt': 'article',
+        'fa-file-text': 'article',
+        'fa-file-image': 'image',
+        'fa-file-video': 'movie',
+        'fa-file-audio': 'music_note',
+        'fa-file-archive': 'folder_zip',
+        'fa-file-code': 'code',
+        'fa-file-csv': 'csv',
+        'fa-file': 'draft'
+    } %}
+    {% set icon_accents = {
+        'picture_as_pdf': 'accent-red',
+        'description': 'accent-blue',
+        'table_chart': 'accent-green',
+        'slideshow': 'accent-amber',
+        'article': 'accent-slate',
+        'image': 'accent-purple',
+        'movie': 'accent-purple',
+        'music_note': 'accent-purple',
+        'folder_zip': 'accent-amber',
+        'code': 'accent-cyan',
+        'csv': 'accent-green',
+        'draft': 'accent-slate'
+    } %}
+    {% for file in files %}
+    {% set symbol = fa_to_symbol.get(file.icon, 'draft') %}
+    {% set accent = icon_accents.get(symbol, 'accent-slate') %}
+    <div class="file-card" style="--card-index: {{ loop.index0 }};" data-filename="{{ file.original_name }}">
+        <input type="checkbox" class="file-checkbox" style="display:none;" data-filename="{{ file.original_name }}">
+        <span class="file-type-chip chip-{{ accent }}">{{ file.type.upper() }}</span>
+        <div class="file-card-head">
+            <div class="file-icon icon-{{ accent }}">
+                <span class="material-symbols-rounded">{{ symbol }}</span>
             </div>
+            <h3 title="{{ file.original_name }}">{{ file.original_name }}</h3>
         </div>
-        {% endif %}
-
-        {% else %}
-        <div class="text-center py-16">
-            <div class="glass-effect rounded-2xl p-12 max-w-md mx-auto">
-                <i class="fas fa-folder-open text-6xl text-white/60 mb-6"></i>
-                <h3 class="text-2xl font-bold text-white mb-4">Файли не знайдено</h3>
-                <p class="text-white/70">
-                    {% if search_query %}За запитом "{{ search_query }}" нічого не знайдено{% else %}Немає файлів для відображення{% endif %}
-                </p>
+        <div class="file-meta">
+            <div class="file-meta-row">
+                <span class="material-symbols-rounded">calendar_today</span>
+                <span>{{ file.upload_date }}</span>
             </div>
+            <div class="file-meta-row">
+                <span class="material-symbols-rounded">scale</span>
+                <span>{{ file.formatted_size }}</span>
+            </div>
+            {% if file.line_count > 0 %}
+            <div class="file-meta-row">
+                <span class="material-symbols-rounded">code</span>
+                <span>{{ file.line_count }} рядків</span>
+            </div>
+            {% endif %}
+            {% if file.download_count > 0 %}
+            <div class="file-meta-row">
+                <span class="material-symbols-rounded">download</span>
+                <span>{{ file.download_count }} завантажень</span>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
-    </div>
-
-    <!-- Bulk Actions Bar -->
-    <div id="bulkActionsBar" class="fixed bottom-[-100px] left-1/2 transform -translate-x-1/2 glass-effect rounded-xl p-4 shadow-2xl transition-all duration-300 z-50">
-        <div class="flex items-center space-x-4">
-            <span class="text-white font-semibold">
-                <span id="selectedCount">0</span> вибрано
-            </span>
-            <button onclick="bulkDelete()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300">
-                <i class="fas fa-trash mr-2"></i>Видалити вибрані
+        <div class="file-actions" style="grid-template-columns:repeat(5,1fr);">
+            <a href="{{ url_for('preview_file', filename=file.original_name) }}" class="file-action-btn action-view" title="Переглянути">
+                <span class="material-symbols-rounded">visibility</span>
+            </a>
+            <a href="{{ url_for('download_file', filename=file.original_name) }}" class="file-action-btn action-download" title="Завантажити">
+                <span class="material-symbols-rounded">download</span>
+            </a>
+            <button onclick='copyLink({{ url_for("download_file", filename=file.original_name, _external=True) | tojson }})' class="file-action-btn action-link" title="Копіювати посилання">
+                <span class="material-symbols-rounded">link</span>
             </button>
-            <button onclick="cancelBulkSelect()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-300">
-                <i class="fas fa-times mr-2"></i>Скасувати
+            <button onclick="showQR('{{ file.original_name }}')" class="file-action-btn action-qr" title="QR код">
+                <span class="material-symbols-rounded">qr_code_2</span>
+            </button>
+            <button onclick="deleteFile('{{ file.original_name }}')" class="file-action-btn" style="background:var(--md-sys-color-error-container);color:var(--md-sys-color-on-error-container);" title="Видалити">
+                <span class="material-symbols-rounded">delete</span>
             </button>
         </div>
     </div>
+    {% endfor %}
+</div>
 
-    <!-- QR Code Modal -->
-    <div id="qrModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-800">QR Код</h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="text-center">
-                <img id="qrImage" src="" alt="QR Code" class="mx-auto mb-4 rounded-lg">
-                <p class="text-sm text-gray-600">Скануйте для завантаження</p>
-            </div>
+{% if total_pages > 1 %}
+<div class="pagination-wrap">
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" class="page-link">
+            <span class="material-symbols-rounded">chevron_left</span>
+        </a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="page-link active">{{ p }}</span>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            <a href="?page={{ p }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" class="page-link">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+            <span class="page-ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&search={{ search_query }}&sort={{ sort_by }}&order={{ sort_order }}&type={{ file_type }}" class="page-link">
+            <span class="material-symbols-rounded">chevron_right</span>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state-wrap">
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <span class="material-symbols-rounded">folder_open</span>
+        </div>
+        <h3>Файли не знайдено</h3>
+        <p>
+            {% if search_query %}
+                За запитом "{{ search_query }}" нічого не знайдено
+            {% else %}
+                Немає файлів для відображення
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div id="bulkActionsBar" class="bulk-actions-bar">
+    <span style="font-weight:600;font-size:0.875rem;">
+        <span id="selectedCount">0</span> вибрано
+    </span>
+    <button onclick="bulkDelete()" class="m3-btn m3-btn-error" style="height:38px;font-size:0.8125rem;padding:0 14px;">
+        <span class="material-symbols-rounded">delete</span>
+        Видалити
+    </button>
+    <button onclick="cancelBulkSelect()" class="m3-btn m3-btn-tonal" style="height:38px;font-size:0.8125rem;padding:0 14px;">
+        <span class="material-symbols-rounded">close</span>
+        Скасувати
+    </button>
+</div>
+
+<div id="qrModal" class="qr-scrim">
+    <div class="qr-dialog">
+        <div class="qr-dialog-head">
+            <h3>QR Код</h3>
+            <button onclick="closeQRModal()" class="m3-icon-btn">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <div class="qr-dialog-body">
+            <img id="qrImage" src="" alt="QR Code">
+            <p>Скануйте для завантаження</p>
         </div>
     </div>
+</div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="glass-effect rounded-xl p-6 max-w-sm mx-4">
-            <h3 class="text-lg font-bold text-white mb-4">Підтвердження видалення</h3>
-            <p class="text-white/70 mb-6">Ви дійсно хочете видалити цей файл?</p>
-            <div class="flex space-x-3">
-                <button onclick="closeDeleteModal()" 
-                        class="flex-1 py-2 bg-gray-500/20 text-white rounded-lg hover:bg-gray-500/40 transition-all duration-300">
-                    Скасувати
-                </button>
-                <a id="deleteLink" href="#" 
-                   class="flex-1 py-2 bg-red-500 text-white rounded-lg text-center hover:bg-red-600 transition-all duration-300">
-                    Видалити
-                </a>
-            </div>
+<div id="deleteModal" class="qr-scrim" style="z-index:150;">
+    <div style="background:var(--md-sys-color-surface-container-low);border-radius:var(--shape-xl);padding:24px;max-width:380px;width:100%;box-shadow:var(--md-sys-elevation-3);animation:popIn 0.3s var(--ease-bounce);">
+        <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:12px;">Підтвердження видалення</h3>
+        <p style="color:var(--md-sys-color-on-surface-variant);margin-bottom:20px;">Ви дійсно хочете видалити цей файл?</p>
+        <div style="display:flex;gap:12px;">
+            <button onclick="closeDeleteModal()" class="m3-btn m3-btn-tonal" style="flex:1;">Скасувати</button>
+            <a id="deleteLink" href="#" class="m3-btn m3-btn-error" style="flex:1;">Видалити</a>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script>
-        let bulkSelectMode = false;
-        let selectedFiles = new Set();
+{% block scripts %}
+<script>
+    let bulkSelectMode = false;
+    let selectedFiles = new Set();
 
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('darkModeIcon').className = 'fas fa-sun';
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
+    });
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropZone.addEventListener(evt, () => dropZone.classList.add('dragover'));
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
+    });
+    dropZone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        fileInput.files = dt.files;
+        updateFileList();
+    });
+    fileInput.addEventListener('change', updateFileList);
+
+    function updateFileList() {
+        const list = document.getElementById('fileList');
+        list.innerHTML = '';
+        if (fileInput.files.length > 0) {
+            Array.from(fileInput.files).forEach((file, idx) => {
+                const item = document.createElement('div');
+                item.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--md-sys-color-surface-container);border-radius:var(--shape-md);padding:10px 14px;font-size:0.875rem;';
+                item.innerHTML = `
+                    <span class="material-symbols-rounded" style="font-size:18px;color:var(--md-sys-color-primary);">description</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${file.name}</span>
+                    <span style="color:var(--md-sys-color-on-surface-variant);font-size:0.75rem;">${formatFileSize(file.size)}</span>
+                    <button onclick="removeFile(${idx})" class="m3-icon-btn" style="width:28px;height:28px;">
+                        <span class="material-symbols-rounded" style="font-size:16px;color:var(--md-sys-color-error);">close</span>
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+    }
+
+    function removeFile(index) {
+        const dt = new DataTransfer();
+        const files = Array.from(fileInput.files);
+        files.splice(index, 1);
+        files.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+        updateFileList();
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const progressPercent = document.getElementById('progressPercent');
+    const progressSpeed = document.getElementById('progressSpeed');
+    const progressStatus = document.getElementById('progressStatus');
+
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (fileInput.files.length === 0) {
+            showToast('Оберіть файли для завантаження', 'error');
+            return;
         }
 
-        // Drag & Drop functionality
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => {
-                dropZone.classList.add('dragover');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => {
-                dropZone.classList.remove('dragover');
-            }, false);
-        });
-
-        dropZone.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            fileInput.files = files;
-            updateFileList();
-        }
-
-        fileInput.addEventListener('change', updateFileList);
-
-        function updateFileList() {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-            
-            if (fileInput.files.length > 0) {
-                Array.from(fileInput.files).forEach((file, index) => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'flex items-center justify-between bg-white/10 rounded-lg p-3';
-                    fileItem.innerHTML = `
-                        <div class="flex items-center">
-                            <i class="fas fa-file text-white mr-2"></i>
-                            <span class="text-white text-sm">${file.name}</span>
-                            <span class="text-white/60 text-xs ml-2">(${formatFileSize(file.size)})</span>
-                        </div>
-                        <button onclick="removeFile(${index})" class="text-red-400 hover:text-red-300">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    `;
-                    fileList.appendChild(fileItem);
-                });
-            }
-        }
-
-        function removeFile(index) {
-            const dt = new DataTransfer();
-            const files = Array.from(fileInput.files);
-            files.splice(index, 1);
-            files.forEach(file => dt.items.add(file));
-            fileInput.files = dt.files;
-            updateFileList();
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        // Upload with Progress Bar
-        const uploadForm = document.getElementById('uploadForm');
-        const uploadProgress = document.getElementById('uploadProgress');
-        const progressBarFill = document.getElementById('progressBarFill');
-        const progressPercent = document.getElementById('progressPercent');
-        const progressSpeed = document.getElementById('progressSpeed');
-        const progressStatus = document.getElementById('progressStatus');
-
-        uploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            const files = fileInput.files;
-            
-            if (files.length === 0) {
-                showNotification('Оберіть файли для завантаження', 'error');
+        for (let file of fileInput.files) {
+            if (file.size > 500 * 1024 * 1024) {
+                showToast(`Файл ${file.name} занадто великий (максимум 500 МБ)`, 'error');
                 return;
             }
+        }
 
-            // Check file size
-            for (let file of files) {
-                if (file.size > 500 * 1024 * 1024) {
-                    showNotification(`Файл ${file.name} занадто великий (максимум 500 МБ)`, 'error');
-                    return;
-                }
-            }
+        const formData = new FormData();
+        Array.from(fileInput.files).forEach(file => formData.append('file', file));
 
-            Array.from(files).forEach(file => {
-                formData.append('file', file);
-            });
+        uploadProgress.classList.add('active');
+        progressBarFill.style.width = '0%';
+        progressPercent.textContent = '0%';
+        progressSpeed.textContent = '0 MB/s';
+        progressStatus.textContent = 'Завантаження...';
 
-            uploadProgress.classList.add('active');
-            
-            const xhr = new XMLHttpRequest();
-            let startTime = Date.now();
-            let startLoaded = 0;
+        const xhr = new XMLHttpRequest();
+        let startTime = Date.now();
+        let startLoaded = 0;
 
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressBarFill.style.width = percentComplete + '%';
-                    progressPercent.textContent = Math.round(percentComplete) + '%';
-                    
-                    // Calculate speed
-                    const currentTime = Date.now();
-                    const timeElapsed = (currentTime - startTime) / 1000;
-                    const bytesUploaded = e.loaded - startLoaded;
-                    const speed = bytesUploaded / timeElapsed / (1024 * 1024);
-                    
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                progressBarFill.style.width = percent + '%';
+                progressPercent.textContent = percent + '%';
+
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (elapsed > 0) {
+                    const speed = (e.loaded - startLoaded) / elapsed / (1024 * 1024);
                     progressSpeed.textContent = speed.toFixed(2) + ' MB/s';
-                    
-                    // Update status
-                    if (percentComplete < 100) {
-                        progressStatus.textContent = 'Завантаження...';
-                        progressBarFill.classList.add('pulse');
-                    }
-                    
-                    startTime = currentTime;
-                    startLoaded = e.loaded;
                 }
-            });
+                progressBarFill.classList.toggle('pulse', percent < 100);
+                startTime = Date.now();
+                startLoaded = e.loaded;
+            }
+        });
 
-            xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                progressBarFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+                progressStatus.textContent = 'Завершено!';
+                progressBarFill.classList.remove('pulse');
+                setTimeout(() => { uploadProgress.classList.remove('active'); location.reload(); }, 1500);
+            } else {
+                uploadProgress.classList.remove('active');
+                showToast('Помилка завантаження', 'error');
+            }
+        });
+
+        xhr.addEventListener('error', function() {
+            uploadProgress.classList.remove('active');
+            showToast('Помилка з\'єднання', 'error');
+        });
+
+        xhr.open('POST', '/upload', true);
+        xhr.send(formData);
+    });
+
+    const privateUploadForm = document.getElementById('privateUploadForm');
+    const privateFileInput = document.getElementById('privateFileInput');
+
+    privateFileInput.addEventListener('change', function() {
+        document.getElementById('privateFileName').textContent = this.files.length > 0 ? `Обрано: ${this.files[0].name}` : '';
+    });
+
+    privateUploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (privateFileInput.files.length === 0) {
+            showToast('Оберіть файл', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', privateFileInput.files[0]);
+
+        uploadProgress.classList.add('active');
+        progressBarFill.style.width = '0%';
+        progressPercent.textContent = '0%';
+        progressSpeed.textContent = '0 MB/s';
+        progressStatus.textContent = 'Завантаження приватного файлу...';
+
+        const xhr = new XMLHttpRequest();
+        let startTime = Date.now();
+        let startLoaded = 0;
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                progressBarFill.style.width = percent + '%';
+                progressPercent.textContent = percent + '%';
+
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (elapsed > 0) {
+                    const speed = (e.loaded - startLoaded) / elapsed / (1024 * 1024);
+                    progressSpeed.textContent = speed.toFixed(2) + ' MB/s';
+                }
+                progressBarFill.classList.toggle('pulse', percent < 100);
+                startTime = Date.now();
+                startLoaded = e.loaded;
+            }
+        });
+
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
                     progressBarFill.style.width = '100%';
                     progressPercent.textContent = '100%';
-                    progressStatus.textContent = 'Завершено!';
+                    progressStatus.textContent = 'Завершено! Пароль: ' + data.password;
                     progressBarFill.classList.remove('pulse');
-                    
                     setTimeout(() => {
                         uploadProgress.classList.remove('active');
-                        location.reload();
-                    }, 1500);
-                } else {
+                        showToast(`Приватний файл завантажено! Пароль: ${data.password}`, 'success');
+                        setTimeout(() => window.location.href = '/admin/private_files', 2000);
+                    }, 1000);
+                } catch (err) {
                     uploadProgress.classList.remove('active');
-                    showNotification('Помилка завантаження', 'error');
+                    showToast('Помилка обробки відповіді', 'error');
                 }
-            });
-
-            xhr.addEventListener('error', function() {
+            } else {
                 uploadProgress.classList.remove('active');
-                showNotification('Помилка з\'єднання', 'error');
-            });
-
-            xhr.open('POST', '/upload', true);
-            xhr.send(formData);
-        });
-
-        // Private File Upload
-        const privateUploadForm = document.getElementById('privateUploadForm');
-        const privateFileInput = document.getElementById('privateFileInput');
-        const privateFileName = document.getElementById('privateFileName');
-
-        privateFileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                privateFileName.textContent = `Обрано: ${this.files[0].name}`;
+                showToast('Помилка завантаження приватного файлу', 'error');
             }
         });
 
-        privateUploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (privateFileInput.files.length === 0) {
-                showNotification('Оберіть файл', 'error');
-                return;
-            }
+        xhr.addEventListener('error', function() {
+            uploadProgress.classList.remove('active');
+            showToast('Помилка з\'єднання', 'error');
+        });
 
-            const formData = new FormData();
-            formData.append('file', privateFileInput.files[0]);
+        xhr.open('POST', '/admin/upload_private', true);
+        xhr.send(formData);
+    });
 
-            uploadProgress.classList.add('active');
-            progressStatus.textContent = 'Завантаження приватного файлу...';
-            progressBarFill.style.width = '0%';
-            progressPercent.textContent = '0%';
+    const urlUploadForm = document.getElementById('urlUploadForm');
+    urlUploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-            const xhr = new XMLHttpRequest();
-            let startTime = Date.now();
-            let startLoaded = 0;
+        const url = document.getElementById('urlInput').value.trim();
+        const filename = document.getElementById('filenameInput').value.trim();
 
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressBarFill.style.width = percentComplete + '%';
-                    progressPercent.textContent = Math.round(percentComplete) + '%';
-                    
-                    const currentTime = Date.now();
-                    const timeElapsed = (currentTime - startTime) / 1000;
-                    const bytesUploaded = e.loaded - startLoaded;
-                    if (timeElapsed > 0) {
-                        const speed = bytesUploaded / timeElapsed / (1024 * 1024);
-                        progressSpeed.textContent = speed.toFixed(2) + ' MB/s';
-                    }
-                    
-                    if (percentComplete < 100) {
-                        progressBarFill.classList.add('pulse');
-                    } else {
-                        progressBarFill.classList.remove('pulse');
-                    }
-                    
-                    startTime = currentTime;
-                    startLoaded = e.loaded;
-                }
-            });
+        if (!url) {
+            showToast('Введіть URL', 'error');
+            return;
+        }
 
-            xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
+        uploadProgress.classList.add('active');
+        progressBarFill.style.width = '0%';
+        progressPercent.textContent = '0%';
+        progressSpeed.textContent = '...';
+        progressStatus.textContent = 'Завантаження з URL...';
+
+        const formData = new FormData();
+        formData.append('url', url);
+        if (filename) formData.append('filename', filename);
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.success) {
                         progressBarFill.style.width = '100%';
                         progressPercent.textContent = '100%';
-                        progressStatus.textContent = 'Завершено! Пароль: ' + data.password;
+                        progressStatus.textContent = 'Завершено!';
                         progressBarFill.classList.remove('pulse');
-                        
                         setTimeout(() => {
                             uploadProgress.classList.remove('active');
-                            showNotification(`Приватний файл завантажено! Пароль: ${data.password}`, 'success');
-                            setTimeout(() => {
-                                window.location.href = '/admin/private_files';
-                            }, 2000);
+                            showToast(`Файл ${data.filename} успішно завантажено з URL!`, 'success');
+                            document.getElementById('urlInput').value = '';
+                            document.getElementById('filenameInput').value = '';
+                            setTimeout(() => location.reload(), 2000);
                         }, 1000);
-                    } catch (e) {
-                        uploadProgress.classList.remove('active');
-                        showNotification('Помилка обробки відповіді', 'error');
-                    }
-                } else {
-                    uploadProgress.classList.remove('active');
-                    showNotification('Помилка завантаження приватного файлу', 'error');
-                }
-            });
-
-            xhr.addEventListener('error', function() {
-                uploadProgress.classList.remove('active');
-                showNotification('Помилка з\'єднання при завантаженні приватного файлу', 'error');
-            });
-
-            xhr.addEventListener('abort', function() {
-                uploadProgress.classList.remove('active');
-                showNotification('Завантаження приватного файлу скасовано', 'error');
-            });
-
-            xhr.open('POST', '/admin/upload_private', true);
-            xhr.send(formData);
-        });
-
-        // URL Upload Handler
-        const urlUploadForm = document.getElementById('urlUploadForm');
-        urlUploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const url = document.getElementById('urlInput').value.trim();
-            const filename = document.getElementById('filenameInput').value.trim();
-
-            if (!url) {
-                showNotification('Введіть URL', 'error');
-                return;
-            }
-
-            uploadProgress.classList.add('active');
-            progressStatus.textContent = 'Завантаження з URL...';
-            progressBarFill.style.width = '0%';
-            progressPercent.textContent = '0%';
-            progressSpeed.textContent = '...';
-
-            const formData = new FormData();
-            formData.append('url', url);
-            if (filename) {
-                formData.append('filename', filename);
-            }
-
-            const xhr = new XMLHttpRequest();
-
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressBarFill.style.width = percentComplete + '%';
-                    progressPercent.textContent = Math.round(percentComplete) + '%';
-                    
-                    if (percentComplete < 100) {
-                        progressBarFill.classList.add('pulse');
-                    }
-                }
-            });
-
-            xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        if (data.success) {
-                            progressBarFill.style.width = '100%';
-                            progressPercent.textContent = '100%';
-                            progressStatus.textContent = 'Завершено!';
-                            progressBarFill.classList.remove('pulse');
-                            
-                            setTimeout(() => {
-                                uploadProgress.classList.remove('active');
-                                showNotification(`Файл ${data.filename} успішно завантажено з URL!`, 'success');
-                                document.getElementById('urlInput').value = '';
-                                document.getElementById('filenameInput').value = '';
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 2000);
-                            }, 1000);
-                        } else {
-                            uploadProgress.classList.remove('active');
-                            showNotification(`Помилка: ${data.message}`, 'error');
-                        }
-                    } catch (e) {
-                        uploadProgress.classList.remove('active');
-                        showNotification('Помилка обробки відповіді', 'error');
-                    }
-                } else {
-                    uploadProgress.classList.remove('active');
-                    showNotification('Помилка завантаження з URL', 'error');
-                }
-            });
-
-            xhr.addEventListener('error', function() {
-                uploadProgress.classList.remove('active');
-                showNotification('Помилка з\'єднання при завантаженні з URL', 'error');
-            });
-
-            xhr.addEventListener('abort', function() {
-                uploadProgress.classList.remove('active');
-                showNotification('Завантаження з URL скасовано', 'error');
-            });
-
-            xhr.open('POST', '/upload_url', true);
-            xhr.send(formData);
-        });
-
-        // QR Code Functions
-        function showQR(filename) {
-            const qrImage = document.getElementById('qrImage');
-            qrImage.src = `/qrcode/${encodeURIComponent(filename)}`;
-            document.getElementById('qrModal').classList.remove('hidden');
-            document.getElementById('qrModal').classList.add('flex');
-        }
-
-        function closeQRModal() {
-            document.getElementById('qrModal').classList.add('hidden');
-            document.getElementById('qrModal').classList.remove('flex');
-        }
-
-        // Delete Functions
-        function deleteFile(filename) {
-            document.getElementById('deleteLink').href = `/delete/${encodeURIComponent(filename)}`;
-            document.getElementById('deleteModal').classList.remove('hidden');
-            document.getElementById('deleteModal').classList.add('flex');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.add('hidden');
-            document.getElementById('deleteModal').classList.remove('flex');
-        }
-
-        // Copy Link
-        function copyLink(url) {
-            if (!url) {
-                showNotification('Немає посилання для копіювання', 'error');
-                return;
-            }
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                    showNotification('Скопійовано до буферу обміну!', 'success');
-                }).catch(() => {
-                    fallbackCopyTextToClipboard(url);
-                });
-            } else {
-                fallbackCopyTextToClipboard(url);
-            }
-        }
-
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showNotification('Скопійовано до буферу обміну!', 'success');
-                } else {
-                    showNotification('Помилка копіювання', 'error');
-                }
-            } catch (err) {
-                console.error('Fallback copy error:', err);
-                showNotification('Помилка копіювання', 'error');
-            }
-
-            document.body.removeChild(textArea);
-        }
-
-        // Notification System
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg z-50 shadow-2xl animate-fade-in`;
-            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle mr-2"></i>${message}`;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
-
-        // Bulk Selection
-        function toggleBulkSelect() {
-            bulkSelectMode = !bulkSelectMode;
-            const checkboxes = document.querySelectorAll('.file-checkbox');
-            const btn = document.getElementById('bulkSelectBtn');
-            
-            if (bulkSelectMode) {
-                checkboxes.forEach(cb => {
-                    cb.classList.remove('hidden');
-                    cb.addEventListener('change', updateBulkSelection);
-                });
-                btn.innerHTML = '<i class="fas fa-times mr-2"></i>Скасувати';
-                btn.classList.remove('from-orange-500', 'to-red-500');
-                btn.classList.add('from-gray-500', 'to-gray-600');
-            } else {
-                cancelBulkSelect();
-            }
-        }
-
-        function updateBulkSelection(e) {
-            const filename = e.target.dataset.filename;
-            if (e.target.checked) {
-                selectedFiles.add(filename);
-            } else {
-                selectedFiles.delete(filename);
-            }
-            
-            document.getElementById('selectedCount').textContent = selectedFiles.size;
-            
-            const bulkBar = document.getElementById('bulkActionsBar');
-            if (selectedFiles.size > 0) {
-                bulkBar.style.bottom = '20px';
-            } else {
-                bulkBar.style.bottom = '-100px';
-            }
-        }
-
-        function cancelBulkSelect() {
-            bulkSelectMode = false;
-            selectedFiles.clear();
-            const checkboxes = document.querySelectorAll('.file-checkbox');
-            const btn = document.getElementById('bulkSelectBtn');
-            
-            checkboxes.forEach(cb => {
-                cb.classList.add('hidden');
-                cb.checked = false;
-            });
-            
-            btn.innerHTML = '<i class="fas fa-check-square mr-2"></i>Вибрати';
-            btn.classList.remove('from-gray-500', 'to-gray-600');
-            btn.classList.add('from-orange-500', 'to-red-500');
-            
-            document.getElementById('bulkActionsBar').style.bottom = '-100px';
-        }
-
-        function bulkDelete() {
-            if (selectedFiles.size === 0) return;
-            
-            if (confirm(`Видалити ${selectedFiles.size} файлів?`)) {
-                fetch('/bulk_delete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        filenames: Array.from(selectedFiles)
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification(data.message, 'success');
-                        setTimeout(() => location.reload(), 1000);
                     } else {
-                        showNotification('Помилка видалення', 'error');
+                        uploadProgress.classList.remove('active');
+                        showToast(`Помилка: ${data.message}`, 'error');
                     }
-                })
-                .catch(error => {
-                    showNotification('Помилка з\'єднання', 'error');
-                });
-            }
-        }
-
-        // Keyboard Shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + U for upload
-            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
-                e.preventDefault();
-                document.getElementById('fileInput').click();
-            }
-            
-            // Delete key for bulk delete
-            if (e.key === 'Delete' && bulkSelectMode && selectedFiles.size > 0) {
-                e.preventDefault();
-                bulkDelete();
-            }
-            
-            // Escape to cancel bulk selection
-            if (e.key === 'Escape' && bulkSelectMode) {
-                cancelBulkSelect();
-            }
-            
-            // Ctrl/Cmd + A to select all (when in bulk mode)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'a' && bulkSelectMode) {
-                e.preventDefault();
-                const checkboxes = document.querySelectorAll('.file-checkbox');
-                checkboxes.forEach(cb => {
-                    cb.checked = true;
-                    selectedFiles.add(cb.dataset.filename);
-                });
-                updateBulkSelection({ target: { checked: true }});
+                } catch (err) {
+                    uploadProgress.classList.remove('active');
+                    showToast('Помилка обробки відповіді', 'error');
+                }
+            } else {
+                uploadProgress.classList.remove('active');
+                showToast('Помилка завантаження з URL', 'error');
             }
         });
 
-        // Context Menu (Right-click)
-        document.querySelectorAll('.file-card').forEach(card => {
-            card.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                const filename = this.dataset.filename;
-                showContextMenu(e.pageX, e.pageY, filename);
-            });
+        xhr.addEventListener('error', function() {
+            uploadProgress.classList.remove('active');
+            showToast('Помилка з\'єднання', 'error');
         });
 
-        function showContextMenu(x, y, filename) {
-            // Remove existing menu
-            const existing = document.querySelector('.context-menu');
-            if (existing) existing.remove();
+        xhr.open('POST', '/upload_url', true);
+        xhr.send(formData);
+    });
 
-            const menu = document.createElement('div');
-            menu.className = 'context-menu active';
-            menu.style.left = x + 'px';
-            menu.style.top = y + 'px';
-            menu.innerHTML = `
-                <div class="context-menu-item" onclick="window.location.href='/preview/${encodeURIComponent(filename)}'">
-                    <i class="fas fa-eye mr-2"></i>Переглянути
-                </div>
-                <div class="context-menu-item" onclick="window.location.href='/download/${encodeURIComponent(filename)}'">
-                    <i class="fas fa-download mr-2"></i>Завантажити
-                </div>
-                <div class="context-menu-item" onclick="copyLink('${window.location.origin}/download/${encodeURIComponent(filename)}')">
-                    <i class="fas fa-link mr-2"></i>Копіювати посилання
-                </div>
-                <div class="context-menu-item" onclick="showQR('${filename}')">
-                    <i class="fas fa-qrcode mr-2"></i>Показати QR
-                </div>
-                <hr class="my-1">
-                <div class="context-menu-item text-red-600" onclick="deleteFile('${filename}')">
-                    <i class="fas fa-trash mr-2"></i>Видалити
-                </div>
-            `;
-            document.body.appendChild(menu);
+    function deleteFile(filename) {
+        document.getElementById('deleteLink').href = `/delete/${encodeURIComponent(filename)}`;
+        document.getElementById('deleteModal').classList.add('open');
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
 
-            // Close on click outside
-            setTimeout(() => {
-                document.addEventListener('click', function closeMenu() {
-                    menu.remove();
-                    document.removeEventListener('click', closeMenu);
-                });
-            }, 100);
+    function copyLink(url) {
+        if (!url) { showToast('Немає посилання для копіювання', 'error'); return; }
+        copyText(url, 'Скопійовано до буферу обміну!');
+    }
+
+    function toggleBulkSelect() {
+        bulkSelectMode = !bulkSelectMode;
+        const checkboxes = document.querySelectorAll('.file-checkbox');
+        const btn = document.getElementById('bulkSelectBtn');
+
+        if (bulkSelectMode) {
+            checkboxes.forEach(cb => cb.style.display = 'block');
+            btn.innerHTML = '<span class="material-symbols-rounded">close</span>Скасувати';
+        } else {
+            cancelBulkSelect();
         }
+    }
 
-        // Auto-refresh stats every 30 seconds
-        setInterval(() => {
-            fetch('/api/stats')
-                .then(response => response.json())
-                .then(data => {
-                    // Update stats without reloading page
-                    console.log('Stats updated:', data);
-                })
-                .catch(error => console.error('Stats update failed:', error));
-        }, 30000);
-    </script>
-</body>
-</html>
+    document.querySelectorAll('.file-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const filename = this.dataset.filename;
+            if (this.checked) selectedFiles.add(filename);
+            else selectedFiles.delete(filename);
+
+            document.getElementById('selectedCount').textContent = selectedFiles.size;
+
+            const bar = document.getElementById('bulkActionsBar');
+            bar.classList.toggle('visible', selectedFiles.size > 0);
+        });
+    });
+
+    function cancelBulkSelect() {
+        bulkSelectMode = false;
+        selectedFiles.clear();
+        document.querySelectorAll('.file-checkbox').forEach(cb => {
+            cb.style.display = 'none';
+            cb.checked = false;
+        });
+        document.getElementById('bulkSelectBtn').innerHTML = '<span class="material-symbols-rounded">checklist</span>Вибрати';
+        document.getElementById('bulkActionsBar').classList.remove('visible');
+        document.getElementById('selectedCount').textContent = '0';
+    }
+
+    function bulkDelete() {
+        if (selectedFiles.size === 0) return;
+        if (confirm(`Видалити ${selectedFiles.size} файлів?`)) {
+            fetch('/bulk_delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filenames: Array.from(selectedFiles) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Помилка видалення', 'error');
+                }
+            })
+            .catch(() => showToast('Помилка з\'єднання', 'error'));
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+            e.preventDefault();
+            document.getElementById('fileInput').click();
+        }
+        if (e.key === 'Escape' && bulkSelectMode) cancelBulkSelect();
+    });
+</script>
+{% endblock %}

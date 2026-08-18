@@ -1601,6 +1601,46 @@ def toggle_module(module_name):
         return jsonify({'success': True, 'message': f'Збережено. Перезапустіть сервер для застосування.'})
     return jsonify({'success': False, 'message': 'Модуль не знайдено'})
     
+@app.route('/admin/stats')
+@login_required
+def admin_stats():
+    """Сторінка статистики"""
+    from collections import Counter
+    stats = get_dashboard_stats()
+
+    downloads_log = load_json(DOWNLOADS_LOG)
+    top_downloads = sorted(
+        [(name, data.get('count', 0)) for name, data in downloads_log.items()],
+        key=lambda x: x[1],
+        reverse=True
+    )[:10]
+
+    files_dir = app.config['FILES_FOLDER']
+    file_exts = []
+    for f in os.listdir(files_dir):
+        try:
+            full_path = safe_join(files_dir, f)
+            if os.path.isfile(full_path) and not f.startswith('.'):
+                ext = os.path.splitext(f)[1].lower()[1:] or 'unknown'
+                file_exts.append(ext)
+        except:
+            pass
+
+    type_counter = Counter(file_exts)
+    total_type_count = sum(type_counter.values())
+    type_stats = [
+        {'type': t, 'count': c, 'percent': round(c / total_type_count * 100, 1) if total_type_count else 0}
+        for t, c in type_counter.most_common(12)
+    ]
+
+    return render_template(
+        'admin_stats.html',
+        stats=stats,
+        top_downloads=top_downloads,
+        type_stats=type_stats
+    )
+
+
 if __name__ == '__main__':
     try:
         logging.info("Запуск Flask сервера...")

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block page_title %}Статистика{% endblock %}
+
+{% block nav_actions %}
+{% if session.get('logged_in') %}
+<a href="{{ url_for('admin') }}" class="m3-btn m3-btn-tonal" title="Адміністрування">
+    <span class="material-symbols-rounded">dashboard</span>
+    <span>Адміністрування</span>
+</a>
+<a href="{{ url_for('admin_private_files') }}" class="m3-btn m3-btn-tonal" title="Приватні файли">
+    <span class="material-symbols-rounded">lock</span>
+    <span>Приватні</span>
+</a>
+<a href="{{ url_for('admin_modules') }}" class="m3-btn m3-btn-tonal" title="Модулі">
+    <span class="material-symbols-rounded">extension</span>
+    <span>Модулі</span>
+</a>
+<a href="{{ url_for('logout') }}" class="m3-btn m3-btn-error" title="Вийти">
+    <span class="material-symbols-rounded">logout</span>
+    <span>Вийти</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <div style="width:52px;height:52px;border-radius:var(--shape-blob);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-rounded" style="font-size:26px;font-variation-settings:'FILL' 1;">analytics</span>
+    </div>
+    <div>
+        <h2 style="font-size:1.5rem;font-weight:700;">Статистика</h2>
+        <p style="color:var(--md-sys-color-on-surface-variant);font-size:0.875rem;">Детальна аналітика сховища</p>
+    </div>
+</div>
+
+{% if stats %}
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <span class="material-symbols-rounded">folder</span>
+        </div>
+        <div class="stat-number" data-animate>{{ stats.total_files }}</div>
+        <div class="stat-label">Всього файлів</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon teal">
+            <span class="material-symbols-rounded">database</span>
+        </div>
+        <div class="stat-number" style="font-size:1.4rem;">{{ stats.formatted_size }}</div>
+        <div class="stat-label">Загальний розмір</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon cyan">
+            <span class="material-symbols-rounded">download</span>
+        </div>
+        <div class="stat-number" data-animate>{{ stats.total_downloads }}</div>
+        <div class="stat-label">Завантажень</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber">
+            <span class="material-symbols-rounded">category</span>
+        </div>
+        <div class="stat-number" data-animate>{{ stats.file_types|length }}</div>
+        <div class="stat-label">Типів файлів</div>
+    </div>
+</div>
+
+<div class="m3-card" style="padding:24px;margin-bottom:24px;animation:fadeInUp 0.5s var(--ease-emphasized) both;">
+    <h3 style="font-size:1.0625rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-rounded" style="color:var(--md-sys-color-primary);">pie_chart</span>
+        Розподіл за типами файлів
+    </h3>
+    {% if type_stats %}
+    <div style="display:flex;flex-direction:column;gap:4px;">
+        {% for item in type_stats %}
+        <div class="chart-bar-row">
+            <span class="chart-bar-label">{{ item.type }}</span>
+            <div class="chart-bar-track">
+                <div class="chart-bar-fill" data-width="{{ item.percent }}" style="width:0%;"></div>
+            </div>
+            <span class="chart-bar-count">{{ item.count }} ({{ "%.1f"|format(item.percent) }}%)</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--md-sys-color-on-surface-variant);text-align:center;padding:24px;">Немає даних</p>
+    {% endif %}
+</div>
+
+<div class="m3-card" style="padding:24px;animation:fadeInUp 0.5s var(--ease-emphasized) both;animation-delay:0.1s;">
+    <h3 style="font-size:1.0625rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-rounded" style="color:var(--md-sys-color-tertiary);">trending_up</span>
+        Топ файлів за завантаженнями
+    </h3>
+    {% if top_downloads %}
+    <div style="display:flex;flex-direction:column;gap:12px;">
+        {% for filename, count in top_downloads %}
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--md-sys-color-surface-container);border-radius:var(--shape-md);">
+            <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:0.8125rem;font-weight:700;flex-shrink:0;">{{ loop.index }}</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.875rem;">{{ filename }}</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);flex-shrink:0;">
+                <span class="material-symbols-rounded" style="font-size:16px;">download</span>
+                {{ count }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--md-sys-color-on-surface-variant);text-align:center;padding:24px;">Ще немає завантажень</p>
+    {% endif %}
+</div>
+
+{% if stats.disk_usage %}
+<div class="m3-card" style="padding:24px;margin-top:24px;animation:fadeInUp 0.5s var(--ease-emphasized) both;animation-delay:0.2s;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="font-size:1.0625rem;font-weight:700;display:flex;align-items:center;gap:8px;">
+            <span class="material-symbols-rounded" style="color:var(--md-sys-color-primary);">hard_drive</span>
+            Використання диску
+        </h3>
+        <span style="font-size:0.9375rem;font-weight:700;color:var(--md-sys-color-primary);">{{ "%.1f"|format(stats.disk_usage.percent) }}%</span>
+    </div>
+    <div class="progress-track" style="height:12px;">
+        <div class="progress-fill" style="width: {{ stats.disk_usage.percent }}%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);">
+        <span>{{ (stats.disk_usage.used / (1024**3))|round(2) }} GB використано</span>
+        <span>{{ (stats.disk_usage.free / (1024**3))|round(2) }} GB вільно</span>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state-wrap">
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <span class="material-symbols-rounded">analytics</span>
+        </div>
+        <h3>Немає даних для статистики</h3>
+        <p>Завантажте файли щоб побачити статистику</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('.stat-number[data-animate]').forEach(el => {
+        const target = parseInt(el.dataset.animate || el.textContent, 10) || 0;
+        const duration = 1200;
+        const start = performance.now();
+
+        function animate(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(target * eased).toLocaleString('uk-UA');
+            if (progress < 1) requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+    });
+
+    setTimeout(() => {
+        document.querySelectorAll('.chart-bar-fill').forEach(bar => {
+            bar.style.width = bar.dataset.width + '%';
+        });
+    }, 200);
+</script>
+{% endblock %}
