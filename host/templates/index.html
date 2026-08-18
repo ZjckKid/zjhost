@@ -243,7 +243,6 @@
             }
         }
 
-        /* Top App Bar */
         .top-app-bar {
             position: sticky;
             top: 0;
@@ -300,10 +299,8 @@
             flex-shrink: 0;
         }
         .app-bar-actions .m3-btn span:not(.material-symbols-rounded) {
-            /* button label text; hidden on very small screens, icon stays */
         }
 
-        /* Theme toggle - Pixel-style switch with both icons always visible */
         .theme-toggle {
             position: relative;
             display: inline-flex;
@@ -371,7 +368,6 @@
             transform: translateX(30px);
         }
 
-        /* Buttons */
         .m3-btn {
             display: inline-flex;
             align-items: center;
@@ -429,7 +425,6 @@
         .m3-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
         .m3-icon-btn:active { transform: scale(0.9); }
 
-        /* Search / filter surface */
         .filter-surface {
             position: relative;
             z-index: 40;
@@ -505,7 +500,6 @@
         }
         .m3-field::placeholder { color: var(--md-sys-color-on-surface-variant); }
 
-        /* Custom dropdown (select replacement) */
         .m3-dropdown {
             position: relative;
             min-width: 150px;
@@ -596,7 +590,6 @@
             opacity: 1;
         }
 
-        /* Pending search notice (many files, results not fully live) */
         .search-status-bar {
             display: none;
             align-items: center;
@@ -619,7 +612,6 @@
             font-size: 0.8125rem;
         }
 
-        /* File grid + cards */
         .file-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
@@ -779,7 +771,6 @@
             .action-qr { opacity: 1; }
         }
 
-        /* Pagination */
         .pagination-wrap {
             display: flex;
             justify-content: center;
@@ -818,7 +809,6 @@
         [data-theme="dark"] .page-link.active { color: #0D1442; }
         .page-ellipsis { padding: 0 8px; color: var(--md-sys-color-on-surface-variant); }
 
-        /* Empty state */
         .empty-state-wrap {
             text-align: center;
             padding: 64px 16px;
@@ -852,7 +842,6 @@
         .empty-state-card h3 { font-size: 1.375rem; font-weight: 700; margin-bottom: 12px; }
         .empty-state-card p { color: var(--md-sys-color-on-surface-variant); margin-bottom: 24px; }
 
-        /* QR Modal */
         .qr-scrim {
             position: fixed;
             inset: 0;
@@ -888,7 +877,6 @@
         }
         .qr-dialog-body p { color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; }
 
-        /* Toast (snackbar) */
         .snackbar {
             position: fixed;
             bottom: 24px;
@@ -922,14 +910,11 @@
             color: var(--md-sys-color-on-error-container);
         }
 
-        /* Wide-to-mid: keep everything on one line, shrink title first */
         @media (max-width: 720px) {
             .brand h1 { font-size: 1.0625rem; }
             .m3-btn { padding: 0 16px; font-size: 0.8125rem; }
         }
 
-        /* Small phones: collapse text labels on action buttons to icon-only,
-           keep theme toggle and brand fully visible and on one row */
         @media (max-width: 560px) {
             .top-app-bar-inner {
                 padding: 8px 12px;
@@ -964,7 +949,6 @@
                 display: none;
             }
 
-            /* Theme toggle */
             .theme-toggle {
                 width: 58px;
                 height: 32px;
@@ -1006,12 +990,10 @@
             .top-app-bar-inner { justify-content: space-between; }
         }
 
-        /* Large / ultra-wide screens: cap grid density so cards don't stretch too thin */
         @media (min-width: 1900px) {
             .file-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
         }
 
-        /* ---------- Cursor spotlight + trail (subtle, desktop pointer only) ---------- */
         .cursor-fx {
             position: fixed;
             inset: 0;
@@ -1020,7 +1002,6 @@
             overflow: hidden;
         }
         .cursor-fx.active {
-            /* soft light that follows the pointer, reacting with the page background */
             background: radial-gradient(
                 220px circle at var(--fx-x, 50%) var(--fx-y, 50%),
                 color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent),
@@ -1054,10 +1035,8 @@
     </style>
 </head>
 <body>
-    <!-- Cursor spotlight + trail layer (desktop pointer only, subtle) -->
     <div class="cursor-fx" id="cursorFx" aria-hidden="true"></div>
 
-    <!-- Top App Bar -->
     <div class="top-app-bar">
         <div class="top-app-bar-inner">
             <div class="brand">
@@ -1103,11 +1082,9 @@
     </div>
 
     <div class="container">
-        <!-- Search and Filters -->
         <div class="filter-surface">
             <form method="GET" id="filterForm">
                 <div class="filter-row">
-                    <!-- Search Input (realtime, client-side) -->
                     <div class="search-field-wrap">
                         <span class="material-symbols-rounded search-icon">search</span>
                         <input type="text"
@@ -1120,7 +1097,6 @@
                         <span class="search-spinner" id="searchSpinner"></span>
                     </div>
 
-                    <!-- File Type Filter (custom dropdown) -->
                     <div class="m3-dropdown" id="typeDropdown" data-name="type">
                         <input type="hidden" name="type" id="typeInput" value="{{ file_type }}">
                         <button type="button" class="m3-dropdown-trigger">
@@ -1141,7 +1117,6 @@
                         </div>
                     </div>
 
-                    <!-- Sort Options (custom dropdown) -->
                     <div class="m3-dropdown" id="sortDropdown" data-name="sort">
                         <input type="hidden" name="sort" id="sortInput" value="{{ sort_by }}">
                         <button type="button" class="m3-dropdown-trigger">
@@ -1170,7 +1145,6 @@
                         </div>
                     </div>
 
-                    <!-- Sort Order (custom dropdown) -->
                     <div class="m3-dropdown" id="orderDropdown" data-name="order">
                         <input type="hidden" name="order" id="orderInput" value="{{ sort_order }}">
                         <button type="button" class="m3-dropdown-trigger">
@@ -1189,14 +1163,12 @@
                         </div>
                     </div>
 
-                    <!-- Search Button (fallback for server-side search on large sets) -->
                     <button type="submit" class="m3-btn m3-btn-filled" id="searchSubmitBtn">
                         <span class="material-symbols-rounded">search</span>
                         Знайти
                     </button>
                 </div>
 
-                <!-- Notice shown when the current page has many files: live search only covers loaded cards -->
                 <div class="search-status-bar" id="searchStatusBar">
                     <span class="material-symbols-rounded">info</span>
                     <span>Показано результати серед завантажених файлів. Для повного пошуку по всьому сховищу натисніть "Пошук вже"</span>
@@ -1206,7 +1178,6 @@
         </div>
 
         {% if files %}
-        <!-- Files Grid -->
         <div class="file-grid" id="fileGrid" data-total-loaded="{{ files|length }}">
             {% for file in files %}
             {% set fa_to_symbol = {
@@ -1302,7 +1273,6 @@
             {% endfor %}
         </div>
 
-        <!-- No live-search results state -->
         <div class="empty-state-wrap" id="noLiveResults" style="display:none;">
             <div class="empty-state-card">
                 <div class="empty-state-icon">
@@ -1317,7 +1287,6 @@
             </div>
         </div>
 
-        <!-- Pagination -->
         {% if total_pages > 1 %}
         <div class="pagination-wrap" id="paginationWrap">
             <div class="pagination">
@@ -1352,7 +1321,6 @@
         {% endif %}
 
         {% else %}
-        <!-- Empty State -->
         <div class="empty-state-wrap">
             <div class="empty-state-card">
                 <div class="empty-state-icon">
@@ -1377,7 +1345,6 @@
         {% endif %}
     </div>
 
-    <!-- QR Modal -->
     <div id="qrModal" class="qr-scrim">
         <div class="qr-dialog">
             <div class="qr-dialog-head">
@@ -1393,14 +1360,12 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="snackbar">
         <span class="material-symbols-rounded">check</span>
         <span id="toastMessage">Посилання скопійовано!</span>
     </div>
 
     <script>
-        /* ---------- Cursor spotlight + trail (subtle, Material-style) ---------- */
         (function() {
             const isCoarsePointer = window.matchMedia('(hover: none), (pointer: coarse)').matches;
             const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1410,7 +1375,7 @@
             if (!fx) return;
 
             let lastDotTime = 0;
-            const DOT_INTERVAL_MS = 55; // spacing between trail dots, keeps it light
+            const DOT_INTERVAL_MS = 55;
             let rafPending = false;
             let lastX = 0, lastY = 0;
 
@@ -1456,7 +1421,6 @@
             });
         })();
 
-        /* ---------- Theme toggle ---------- */
         document.getElementById('themeToggle').addEventListener('click', function() {
             const html = document.documentElement;
             const current = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
@@ -1465,7 +1429,6 @@
             localStorage.setItem('zjh-theme', next);
         });
 
-        /* ---------- Custom dropdowns ---------- */
         document.querySelectorAll('.m3-dropdown').forEach(function(dropdown) {
             const trigger = dropdown.querySelector('.m3-dropdown-trigger');
             const label = dropdown.querySelector('.m3-dropdown-trigger-label');
@@ -1487,10 +1450,6 @@
                     label.textContent = opt.querySelector('span').textContent;
                     dropdown.classList.remove('open');
 
-                    // Type / sort / order changes should re-trigger form submit only if
-                    // we already have a search query typed (keeps behavior consistent),
-                    // otherwise just update state — sort/order/type require server-side reload
-                    // since they operate on the full dataset, not just the loaded page.
                     document.getElementById('filterForm').submit();
                 });
             });
@@ -1500,7 +1459,6 @@
             document.querySelectorAll('.m3-dropdown.open').forEach(function(d) { d.classList.remove('open'); });
         });
 
-        /* ---------- Realtime client-side search ---------- */
         const searchInput = document.getElementById('searchInput');
         const searchSpinner = document.getElementById('searchSpinner');
         const fileGrid = document.getElementById('fileGrid');
@@ -1509,8 +1467,6 @@
         const paginationWrap = document.getElementById('paginationWrap');
         const searchSubmitBtn = document.getElementById('searchSubmitBtn');
 
-        // Threshold above which we consider the loaded page "large" and surface
-        // a hint that live filtering only covers what's already on screen.
         const LARGE_SET_THRESHOLD = 60;
         const loadedCount = fileGrid ? parseInt(fileGrid.dataset.totalLoaded || '0', 10) : 0;
 
@@ -1573,13 +1529,11 @@
                 }, 120);
             });
 
-            // Run once on load in case of pre-filled query (e.g. back navigation)
             if (searchInput.value.trim()) {
                 runLiveFilter();
             }
         }
 
-        /* ---------- QR Functions ---------- */
         function showQR(filename) {
             const qrImage = document.getElementById('qrImage');
             qrImage.src = `/qrcode/${encodeURIComponent(filename)}`;
@@ -1590,7 +1544,6 @@
             document.getElementById('qrModal').classList.remove('open');
         }
 
-        /* ---------- Copy link ---------- */
         function copyLink(url) {
             if (!url) {
                 showToast('Немає посилання для копіювання', 'error');
@@ -1639,7 +1592,6 @@
             toastTimeout = setTimeout(function() { toast.classList.remove('show'); }, 3000);
         }
 
-        /* ---------- Keyboard shortcut ---------- */
         document.addEventListener('keydown', function(e) {
             if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
                 e.preventDefault();
@@ -1647,7 +1599,6 @@
             }
         });
 
-        /* ---------- Close QR modal on scrim click ---------- */
         document.getElementById('qrModal').addEventListener('click', function(e) {
             if (e.target === this) closeQRModal();
         });

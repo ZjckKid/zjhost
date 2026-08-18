@@ -114,7 +114,6 @@
             --shape-blob: 42% 58% 65% 35% / 45% 40% 60% 55%;
             --shape-full: 999px;
 
-            /* legacy aliases kept for compatibility with any older markup */
             --md-sys-shape-corner-xs: var(--shape-xs);
             --md-sys-shape-corner-sm: var(--shape-sm);
             --md-sys-shape-corner-md: var(--shape-md);
@@ -199,7 +198,6 @@
             padding: 24px clamp(16px, 4vw, 40px);
         }
 
-        /* Theme toggle - both icons always visible, active one highlighted */
         .theme-toggle {
             position: relative;
             display: inline-flex;
@@ -260,7 +258,6 @@
             transform: translateX(30px);
         }
 
-        /* Buttons */
         .m3-btn {
             display: inline-flex;
             align-items: center;
@@ -345,7 +342,6 @@
             filter: brightness(0.95);
         }
 
-        /* Cards / surfaces */
         .m3-card {
             background: var(--md-sys-color-surface-container-low);
             border-radius: var(--md-sys-shape-corner-lg);
@@ -353,7 +349,6 @@
             transition: background-color 0.35s var(--ease-standard);
         }
 
-        /* Text fields */
         .m3-field {
             height: 56px;
             padding: 0 16px;
@@ -388,7 +383,6 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23C4C6D8'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
         }
 
-        /* Chips */
         .m3-chip {
             display: inline-flex;
             align-items: center;
@@ -404,7 +398,6 @@
             text-transform: uppercase;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 10px;
             height: 10px;
@@ -573,7 +566,6 @@
             }
         }
 
-        /* ---------- Cursor spotlight + trail (subtle, desktop pointer only) ---------- */
         .cursor-fx {
             position: fixed;
             inset: 0;
@@ -619,7 +611,6 @@
     {% block content %}{% endblock %}
 
     <script>
-        /* ---------- Cursor spotlight + trail (subtle, Material-style) ---------- */
         (function() {
             const isCoarsePointer = window.matchMedia('(hover: none), (pointer: coarse)').matches;
             const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -675,8 +666,6 @@
             });
         })();
 
-        // Shared theme toggle helper (used if this page includes a #themeToggle element).
-        // Icon/thumb visuals are handled purely by CSS via the data-theme attribute.
         (function() {
             const toggle = document.getElementById('themeToggle');
             if (toggle) {
