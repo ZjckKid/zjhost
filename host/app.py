@@ -1402,6 +1402,12 @@ def skinbot_dashboard():
         # Сортуємо скіни за датою (найновіші спочатку)
         if skins:
             skins.sort(key=lambda x: x.get('timestamp', 0), reverse=True)
+            
+            for skin in skins:
+                filename = skin.get('filename', '')
+                local_path = safe_join(app.config['SKINS_FOLDER'], filename)
+                if filename and os.path.isfile(local_path):
+                    skin['link'] = url_for('download_skin', filename=filename, _external=True)
         
         return render_template('skinbot_dashboard.html', 
                              username=username,

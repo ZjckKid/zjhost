@@ -1,668 +1,146 @@
-<!DOCTYPE html>
-<html lang="uk" data-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="ZJH SkinBot - Login" />
-    <meta property="og:description" content="Вхід в панель скінів" />
-    <meta property="og:type" content="website" />
-    <title>ZJH SkinBot - Вхід</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-
-    <script>
-        (function() {
-            var saved = localStorage.getItem('zjh-theme');
-            var theme = saved || 'dark';
-            document.documentElement.setAttribute('data-theme', theme);
-        })();
-    </script>
-
-    <style>
-        :root,
-        [data-theme="light"] {
-            --md-sys-color-primary: #4C5FE8;
-            --md-sys-color-on-primary: #FFFFFF;
-            --md-sys-color-primary-container: #E1E4FF;
-            --md-sys-color-on-primary-container: #0F1B3D;
-
-            --md-sys-color-secondary: #0FA9D6;
-            --md-sys-color-secondary-container: #D2F1FA;
-            --md-sys-color-on-secondary-container: #003544;
-
-            --md-sys-color-error: #C4392C;
-            --md-sys-color-on-error: #FFFFFF;
-            --md-sys-color-error-container: #FBE0DD;
-            --md-sys-color-on-error-container: #4A140C;
-
-            --md-sys-color-tertiary: #1E9E6B;
-            --md-sys-color-tertiary-container: #CFF5E2;
-            --md-sys-color-on-tertiary-container: #00341E;
-
-            --md-sys-color-surface: #FBFCFF;
-            --md-sys-color-surface-container-lowest: #FFFFFF;
-            --md-sys-color-surface-container-low: #F3F5FE;
-            --md-sys-color-surface-container: #EBEEFC;
-            --md-sys-color-surface-container-high: #E1E5FA;
-            --md-sys-color-surface-container-highest: #D6DCF7;
-            --md-sys-color-on-surface: #1A1B2C;
-            --md-sys-color-on-surface-variant: #45475C;
-
-            --md-sys-color-outline: #767892;
-            --md-sys-color-outline-variant: #C6C9E6;
-
-            --md-sys-color-background: #F3F5FE;
-
-            --brand-gradient: linear-gradient(135deg, #4F6BFF 0%, #38C6F0 100%);
-            --wash-1: rgba(79, 107, 255, 0.12);
-            --wash-2: rgba(56, 198, 240, 0.14);
-            --wash-3: rgba(176, 66, 155, 0.08);
-
-            --scrim: rgba(20, 22, 34, 0.45);
-            --snackbar-bg: #2E3038;
-            --snackbar-fg: #F1F0F4;
-
-            --toggle-track-off: #E1E5FA;
-            --toggle-track-on: var(--brand-gradient);
-            --toggle-icon-off: #767892;
-
-            color-scheme: light;
-        }
-
-        [data-theme="dark"] {
-            --md-sys-color-primary: #B4C1FF;
-            --md-sys-color-on-primary: #182A80;
-            --md-sys-color-primary-container: #2E3E9E;
-            --md-sys-color-on-primary-container: #DEE3FF;
-
-            --md-sys-color-secondary: #7FDBF5;
-            --md-sys-color-secondary-container: #045169;
-            --md-sys-color-on-secondary-container: #C3F0FF;
-
-            --md-sys-color-error: #FFB4A9;
-            --md-sys-color-on-error: #680600;
-            --md-sys-color-error-container: #93000A;
-            --md-sys-color-on-error-container: #FFDAD4;
-
-            --md-sys-color-tertiary: #7EDCA8;
-            --md-sys-color-tertiary-container: #0A5A34;
-            --md-sys-color-on-tertiary-container: #ADF4C6;
-
-            --md-sys-color-surface: #111219;
-            --md-sys-color-surface-container-lowest: #0A0B10;
-            --md-sys-color-surface-container-low: #191A23;
-            --md-sys-color-surface-container: #1D1F29;
-            --md-sys-color-surface-container-high: #272A36;
-            --md-sys-color-surface-container-highest: #323545;
-            --md-sys-color-on-surface: #E3E2EA;
-            --md-sys-color-on-surface-variant: #C4C6D8;
-
-            --md-sys-color-outline: #8D909E;
-            --md-sys-color-outline-variant: #3E4150;
-
-            --md-sys-color-background: #0D0E14;
-
-            --brand-gradient: linear-gradient(135deg, #6C82FF 0%, #4FD8F5 100%);
-            --wash-1: rgba(108, 130, 255, 0.18);
-            --wash-2: rgba(79, 216, 245, 0.15);
-            --wash-3: rgba(200, 110, 230, 0.10);
-
-            --scrim: rgba(0, 0, 0, 0.6);
-            --snackbar-bg: #E3E2EA;
-            --snackbar-fg: #1F2029;
-
-            --toggle-track-off: #272A36;
-            --toggle-track-on: var(--brand-gradient);
-            --toggle-icon-off: #8D909E;
-
-            color-scheme: dark;
-        }
-
-        :root {
-            --shape-xs: 8px;
-            --shape-sm: 14px;
-            --shape-md: 18px;
-            --shape-lg: 24px;
-            --shape-xl: 32px;
-            --shape-blob: 42% 58% 65% 35% / 45% 40% 60% 55%;
-            --shape-full: 999px;
-
-            --md-sys-elevation-1: 0px 1px 2px 0px rgba(0,0,0,0.24), 0px 2px 6px 1px rgba(0,0,0,0.12);
-            --md-sys-elevation-2: 0px 2px 4px 0px rgba(0,0,0,0.24), 0px 4px 12px 2px rgba(0,0,0,0.14);
-            --md-sys-elevation-3: 0px 3px 6px 0px rgba(0,0,0,0.26), 0px 6px 18px 3px rgba(0,0,0,0.16);
-
-            --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-            --ease-emphasized: cubic-bezier(0.3, 0, 0.1, 1);
-            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            font-family: 'Google Sans Text', 'Roboto', sans-serif;
-            background:
-                radial-gradient(720px 420px at 8% 0%, var(--wash-1), transparent 65%),
-                radial-gradient(680px 460px at 98% 4%, var(--wash-2), transparent 60%),
-                radial-gradient(600px 500px at 50% 100%, var(--wash-3), transparent 65%),
-                var(--md-sys-color-background);
-            background-attachment: fixed;
-            color: var(--md-sys-color-on-surface);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            transition: background-color 0.35s var(--ease-standard), color 0.35s var(--ease-standard);
-        }
-
-        .material-symbols-rounded {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-            line-height: 1;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes floatBlob {
-            0%, 100% { border-radius: var(--shape-blob); transform: translateY(0) rotate(0deg); }
-            50% { border-radius: 58% 42% 35% 65% / 55% 60% 40% 45%; transform: translateY(-4px) rotate(3deg); }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .top-bar {
-            padding: 16px 24px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        .theme-toggle {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 64px;
-            height: 34px;
-            border-radius: var(--shape-full);
-            border: none;
-            background: var(--toggle-track-off);
-            cursor: pointer;
-            padding: 0 8px;
-            transition: background-color 0.35s var(--ease-standard);
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-        .theme-toggle-icon {
-            position: relative;
-            z-index: 2;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            transition: opacity 0.3s ease, transform 0.3s var(--ease-bounce);
-        }
-        .theme-toggle-icon.sun { color: #E8A33D; }
-        [data-theme="dark"] .theme-toggle-icon.sun { color: #6B6E80; opacity: 0.55; transform: scale(0.85); }
-        .theme-toggle-icon.moon { color: #6B6E80; opacity: 0.55; transform: scale(0.85); }
-        [data-theme="dark"] .theme-toggle-icon.moon { color: #C7D3FF; opacity: 1; transform: scale(1); }
-        .theme-toggle-thumb {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--brand-gradient);
-            transform: translateX(0);
-            transition: transform 0.4s var(--ease-bounce);
-            box-shadow: var(--md-sys-elevation-1);
-            z-index: 1;
-        }
-        [data-theme="dark"] .theme-toggle-thumb { transform: translateX(30px); }
-
-        .auth-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .auth-card {
-            background: var(--md-sys-color-surface-container-low);
-            border-radius: var(--shape-xl);
-            padding: 32px 28px;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: var(--md-sys-elevation-2);
-            animation: fadeInUp 0.4s var(--ease-emphasized);
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .auth-header {
-            text-align: center;
-        }
-
-        .auth-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 16px;
-            border-radius: var(--shape-blob);
-            background: var(--brand-gradient);
-            color: #FFFFFF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: floatBlob 3s ease-in-out infinite;
-        }
-        .auth-icon .material-symbols-rounded { font-size: 32px; }
-
-        .auth-header h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-            color: var(--md-sys-color-on-surface);
-        }
-
-        .auth-header p {
-            font-size: 0.875rem;
-            color: var(--md-sys-color-on-surface-variant);
-            margin-top: 4px;
-        }
-
-        .instructions-card {
-            background: var(--md-sys-color-surface-container-highest);
-            border-radius: var(--shape-md);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .instructions-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: var(--md-sys-color-on-surface);
-        }
-        .instructions-title .material-symbols-rounded {
-            font-size: 20px;
-            color: var(--md-sys-color-primary);
-        }
-
-        .instructions-list {
-            padding-left: 20px;
-            font-size: 0.8125rem;
-            color: var(--md-sys-color-on-surface-variant);
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .instructions-list a {
-            color: var(--md-sys-color-primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .instructions-list a:hover { text-decoration: underline; }
-
-        .code-badge {
-            background: var(--md-sys-color-surface-container-low);
-            color: var(--md-sys-color-on-surface);
-            padding: 2px 6px;
-            border-radius: var(--shape-xs);
-            font-family: monospace;
-            font-weight: 600;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .field-label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--md-sys-color-on-surface-variant);
-        }
-        .field-label .material-symbols-rounded { font-size: 16px; }
-
-        .m3-field {
-            height: 52px;
-            padding: 0 16px;
-            border-radius: var(--shape-full);
-            border: 2px solid var(--md-sys-color-outline-variant);
-            background: var(--md-sys-color-surface-container-lowest);
-            color: var(--md-sys-color-on-surface);
-            font-family: monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 0.35em;
-            text-transform: uppercase;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            width: 100%;
-        }
-
-        .m3-field:focus {
-            outline: none;
-            border-color: var(--md-sys-color-primary);
-            box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
-        }
-
-        .m3-field::placeholder {
-            font-family: 'Google Sans Text', sans-serif;
-            font-size: 0.875rem;
-            letter-spacing: normal;
-            font-weight: 400;
-            color: var(--md-sys-color-on-surface-variant);
-            opacity: 0.7;
-        }
-
-        .field-hint {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75rem;
-            color: var(--md-sys-color-on-surface-variant);
-        }
-        .field-hint .material-symbols-rounded { font-size: 14px; }
-
-        .m3-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            height: 48px;
-            padding: 0 24px;
-            border: none;
-            border-radius: var(--shape-full);
-            font-family: inherit;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: box-shadow 0.2s var(--ease-standard), transform 0.15s var(--ease-bounce), filter 0.2s ease;
-            width: 100%;
-        }
-
-        .m3-btn:active { transform: scale(0.97); }
-        .m3-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .m3-btn .material-symbols-rounded { font-size: 20px; }
-
-        .m3-btn-filled {
-            background: var(--brand-gradient);
-            color: #FFFFFF;
-        }
-        [data-theme="dark"] .m3-btn-filled { color: #0D1442; }
-
-        .m3-btn-filled:hover:not(:disabled) {
-            box-shadow: var(--md-sys-elevation-2);
-            filter: brightness(1.08);
-            transform: translateY(-1px);
-        }
-
-        .m3-btn-tonal {
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-        }
-
-        .m3-btn-tonal:hover { box-shadow: var(--md-sys-elevation-1); transform: translateY(-1px); }
-
-        .flash-banner {
-            display: none;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            border-radius: var(--shape-md);
-            font-size: 0.8125rem;
-            font-weight: 600;
-            animation: fadeInUp 0.3s ease;
-        }
-
-        .flash-banner.show { display: flex; }
-        .flash-banner.error {
-            background: var(--md-sys-color-error-container);
-            color: var(--md-sys-color-on-error-container);
-        }
-        .flash-banner.success {
-            background: var(--md-sys-color-tertiary-container);
-            color: var(--md-sys-color-on-tertiary-container);
-        }
-
-        .auth-footer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--md-sys-color-outline-variant);
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--md-sys-color-on-surface-variant);
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        .back-link:hover { color: var(--md-sys-color-primary); }
-
-        .bot-prompt {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .bot-prompt p {
-            font-size: 0.8125rem;
-            color: var(--md-sys-color-on-surface-variant);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .spinner {
-            animation: spin 0.8s linear infinite;
-        }
-    </style>
-</head>
-<body>
-    <div class="top-bar">
-        <button type="button" class="theme-toggle" id="themeToggle" aria-label="Перемкнути тему" title="Перемкнути тему">
-            <span class="theme-toggle-icon sun">
-                <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 1;">light_mode</span>
-            </span>
-            <span class="theme-toggle-icon moon">
-                <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
-            </span>
-            <span class="theme-toggle-thumb"></span>
-        </button>
-    </div>
-
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="auth-icon">
-                    <span class="material-symbols-rounded">send</span>
-                </div>
-                <h1>SkinBot</h1>
-                <p>Вхід через Telegram</p>
+{% extends "base.html" %}
+
+{% block page_title %}SkinBot - Вхід{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-icon-wrap">
+            <span class="material-symbols-rounded" style="font-variation-settings: 'FILL' 1;">send</span>
+        </div>
+
+        <h1 style="text-align:center;font-size:1.75rem;font-weight:700;margin-bottom:8px;">SkinBot</h1>
+        <p style="text-align:center;color:var(--md-sys-color-on-surface-variant);margin-bottom:24px;">Вхід через Telegram</p>
+
+        <div id="flashBanner" style="display:none;margin-bottom:16px;"></div>
+
+        <div class="m3-card" style="padding:20px;border-radius:var(--shape-lg);margin-bottom:20px;">
+            <h3 style="font-size:0.9375rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                <span class="material-symbols-rounded" style="font-size:20px;color:var(--md-sys-color-primary);">info</span>
+                Як увійти:
+            </h3>
+            <ol style="color:var(--md-sys-color-on-surface-variant);font-size:0.875rem;list-style:none;display:flex;flex-direction:column;gap:8px;">
+                <li style="display:flex;gap:8px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:var(--md-sys-color-primary);flex-shrink:0;">looks_one</span>
+                    Відкрийте бота в Telegram: <a href="{{ skinbot_link or '#' }}" target="_blank" style="color:var(--md-sys-color-primary);font-weight:600;">{{ skinbot_display }}</a>
+                </li>
+                <li style="display:flex;gap:8px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:var(--md-sys-color-primary);flex-shrink:0;">looks_two</span>
+                    Надішліть команду <code class="mono-code">/connect</code>
+                </li>
+                <li style="display:flex;gap:8px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:var(--md-sys-color-primary);flex-shrink:0;">looks_3</span>
+                    Скопіюйте отриманий код
+                </li>
+                <li style="display:flex;gap:8px;align-items:flex-start;">
+                    <span class="material-symbols-rounded" style="font-size:18px;color:var(--md-sys-color-primary);flex-shrink:0;">looks_4</span>
+                    Вставте код нижче
+                </li>
+            </ol>
+        </div>
+
+        <form id="loginForm">
+            <div style="margin-bottom:16px;">
+                <label for="code" style="display:block;font-size:0.875rem;font-weight:600;color:var(--md-sys-color-on-surface);margin-bottom:8px;">
+                    <span class="material-symbols-rounded" style="font-size:18px;vertical-align:middle;margin-right:4px;">key</span>
+                    Код з Telegram
+                </label>
+                <input type="text"
+                       id="code"
+                       name="code"
+                       required
+                       maxlength="6"
+                       placeholder="••••••"
+                       class="m3-field code-input"
+                       style="height:56px;"
+                       autocomplete="off">
+                <p style="color:var(--md-sys-color-on-surface-variant);font-size:0.8125rem;margin-top:8px;display:flex;align-items:center;gap:4px;">
+                    <span class="material-symbols-rounded" style="font-size:16px;">schedule</span>
+                    Код дійсний 10 хвилин
+                </p>
             </div>
 
-            <div id="flashBanner" class="flash-banner">
-                <span class="material-symbols-rounded" id="flashIcon">info</span>
-                <span id="flashText"></span>
-            </div>
+            <button type="submit" id="submitBtn" class="m3-btn m3-btn-filled" style="width:100%;height:48px;font-size:1rem;">
+                <span class="material-symbols-rounded">login</span>
+                Увійти
+            </button>
+        </form>
 
-            <div class="instructions-card">
-                <div class="instructions-title">
-                    <span class="material-symbols-rounded">info</span>
-                    <span>Як увійти:</span>
-                </div>
-                <ol class="instructions-list">
-                    <li>Відкрийте бота в Telegram: <a href="{{ skinbot_link or '#' }}" target="_blank">{{ skinbot_display }}</a></li>
-                    <li>Надішліть команду <code class="code-badge">/connect</code></li>
-                    <li>Скопіюйте отриманий код</li>
-                    <li>Вставте код нижче</li>
-                </ol>
-            </div>
-
-            <form id="loginForm" class="auth-form">
-                <div class="field-group">
-                    <label for="code" class="field-label">
-                        <span class="material-symbols-rounded">key</span>
-                        Код з Telegram
-                    </label>
-                    <input type="text" 
-                           id="code" 
-                           name="code" 
-                           required
-                           maxlength="6"
-                           placeholder="6-значний код"
-                           class="m3-field"
-                           autocomplete="off">
-                    <div class="field-hint">
-                        <span class="material-symbols-rounded">schedule</span>
-                        Код дійсний 10 хвилин
-                    </div>
-                </div>
-
-                <button type="submit" id="submitBtn" class="m3-btn m3-btn-filled">
-                    <span class="material-symbols-rounded">login</span>
-                    <span>Увійти</span>
-                </button>
-            </form>
-
-            <!-- Footer -->
-            <div class="auth-footer">
-                <a href="{{ url_for('index') }}" class="back-link">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                    <span>Повернутися на головну</span>
-                </a>
-
-                <div class="bot-prompt">
-                    <p>
-                        <span class="material-symbols-rounded" style="font-size:16px;">smart_toy</span>
-                        Ще не маєте акаунту?
-                    </p>
-                    <a href="{{ skinbot_link or '#' }}" target="_blank" class="m3-btn m3-btn-tonal" style="height: 40px; font-size: 0.875rem;">
-                        <span class="material-symbols-rounded">send</span>
-                        <span>Відкрити бота</span>
-                    </a>
-                </div>
-            </div>
+        <div style="margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <a href="{{ url_for('index') }}" class="m3-btn m3-btn-outlined" style="height:38px;font-size:0.8125rem;">
+                <span class="material-symbols-rounded">arrow_back</span>
+                Повернутися на головну
+            </a>
+            <p style="font-size:0.8125rem;color:var(--md-sys-color-on-surface-variant);display:flex;align-items:center;gap:4px;">
+                <span class="material-symbols-rounded" style="font-size:16px;">smart_toy</span>
+                Ще не маєте акаунту?
+            </p>
+            <a href="{{ skinbot_link or '#' }}" target="_blank" class="m3-btn m3-btn-tonal" style="height:40px;font-size:0.875rem;">
+                <span class="material-symbols-rounded">send</span>
+                Відкрити бота
+            </a>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script>
-        document.getElementById('themeToggle').addEventListener('click', function() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-            const next = current === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            localStorage.setItem('zjh-theme', next);
-        });
+{% block scripts %}
+<script>
+    const form = document.getElementById('loginForm');
+    const codeInput = document.getElementById('code');
+    const submitBtn = document.getElementById('submitBtn');
+    const flashBanner = document.getElementById('flashBanner');
 
-        const form = document.getElementById('loginForm');
-        const codeInput = document.getElementById('code');
-        const submitBtn = document.getElementById('submitBtn');
-        const flashBanner = document.getElementById('flashBanner');
-        const flashIcon = document.getElementById('flashIcon');
-        const flashText = document.getElementById('flashText');
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
 
-        codeInput.addEventListener('input', function() {
-            this.value = this.value.toUpperCase();
-        });
+    function showMessage(message, type) {
+        flashBanner.style.display = 'block';
+        flashBanner.className = `flash-message ${type === 'error' ? 'flash-error' : 'flash-success'}`;
+        flashBanner.innerHTML = `
+            <span class="material-symbols-rounded">${type === 'error' ? 'error' : 'check_circle'}</span>
+            ${message}
+        `;
+        if (type === 'success') {
+            setTimeout(() => { window.location.href = '/skinbot'; }, 1200);
+        }
+    }
 
-        function showMessage(message, type) {
-            flashBanner.className = 'flash-banner show ' + type;
-            flashIcon.textContent = type === 'error' ? 'error' : 'check_circle';
-            flashText.textContent = message;
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-            if (type === 'success') {
-                setTimeout(() => {
-                    window.location.href = '/skinbot';
-                }, 1200);
-            }
+        const code = codeInput.value.trim();
+
+        if (code.length !== 6) {
+            showMessage('Код повинен містити 6 символів', 'error');
+            return;
         }
 
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-rounded" style="animation:spin 0.8s linear infinite;">progress_activity</span>Перевірка...';
 
-            const code = codeInput.value.trim();
+        try {
+            const response = await fetch('/skinbot/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            });
 
-            if (code.length !== 6) {
-                showMessage('Код повинен містити 6 символів', 'error');
-                return;
-            }
+            const data = await response.json();
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="material-symbols-rounded spinner">progress_activity</span><span>Перевірка...</span>';
-
-            try {
-                const response = await fetch('/skinbot/verify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code: code })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showMessage('Успішний вхід! Перенаправлення...', 'success');
-                } else {
-                    showMessage(data.message || 'Невірний або прострочений код', 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<span class="material-symbols-rounded">login</span><span>Увійти</span>';
-                }
-            } catch (error) {
-                showMessage('Помилка з\'єднання. Спробуйте ще раз.', 'error');
+            if (data.success) {
+                showMessage('Успішний вхід! Перенаправлення...', 'success');
+            } else {
+                showMessage(data.message || 'Невірний або прострочений код', 'error');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span class="material-symbols-rounded">login</span><span>Увійти</span>';
+                submitBtn.innerHTML = '<span class="material-symbols-rounded">login</span>Увійти';
             }
-        });
-    </script>
-</body>
-</html>
+        } catch (error) {
+            showMessage('Помилка з\'єднання. Спробуйте ще раз.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="material-symbols-rounded">login</span>Увійти';
+        }
+    });
+</script>
+{% endblock %}

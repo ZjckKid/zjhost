@@ -266,7 +266,7 @@
             background: var(--md-sys-color-surface-container-low);
             border-radius: var(--shape-lg);
             box-shadow: var(--md-sys-elevation-1);
-            overflow: hidden;
+            overflow: visible;
             animation: fadeIn 0.4s var(--ease-standard);
         }
 
@@ -274,6 +274,9 @@
             background: #111219 !important;
             color: #E3E2EA;
             border-radius: var(--shape-md);
+            overflow-x: auto;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
         }
         .code-preview pre {
             margin: 0;
@@ -287,6 +290,16 @@
             display: block;
             min-width: 100%;
             width: max-content;
+        }
+        .text-preview {
+            padding: 24px;
+            font-family: 'Roboto Mono', 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 82vh;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .text-preview {
